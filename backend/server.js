@@ -126,17 +126,6 @@ ${resumeText}
   return parsed;
 }
 
-function normalizeScore(val) {
-  if (val <= 10) return val * 10; // convert 7 → 70
-  return val;
-}
-
-parsed.breakdown = {
-  clarity: normalizeScore(parsed.breakdown?.clarity ?? 0),
-  impact: normalizeScore(parsed.breakdown?.impact ?? 0),
-  skills: normalizeScore(parsed.breakdown?.skills ?? 0),
-  structure: normalizeScore(parsed.breakdown?.structure ?? 0),
-};
 
 /* ---------- FALLBACK ---------- */
 function fallback() {

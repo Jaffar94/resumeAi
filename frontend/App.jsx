@@ -47,7 +47,7 @@ export default function App() {
     setData(null);
 
     try {
-      const res = await fetch("http://localhost:5000/analyze", {
+      const res = await fetch("https://resumeai-yq3d.onrender.com/analyze", {
         method: "POST",
         body: fd,
       });

@@ -348,3 +348,87 @@ body {
     font-size: 11px;
   }
 }
+
+/* ===== MOBILE OPTIMIZATION ===== */
+
+@media (max-width: 640px) {
+
+  .app {
+    padding: 12px;
+  }
+
+  .glass {
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  /* HERO */
+  .hero-main {
+    margin-bottom: 20px;
+  }
+
+  .hero-sub {
+    font-size: 14px;
+  }
+
+  .benefits {
+    font-size: 12px;
+  }
+
+  /* INPUT */
+  .role-input {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .upload {
+    padding: 16px;
+    font-size: 13px;
+  }
+
+  .btn {
+    padding: 11px;
+    font-size: 13px;
+  }
+
+  /* SCORE */
+  .score {
+    font-size: 44px;
+  }
+
+  .summary {
+    font-size: 13px;
+  }
+
+  /* SKILLS */
+  .skills span {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  /* LEGEND */
+  .legend {
+    font-size: 11px;
+    gap: 8px;
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 10px;
+  }
+
+  .section li {
+    font-size: 13px;
+  }
+
+  /* BARS */
+  .bar-top {
+    font-size: 12px;
+  }
+
+  /* ATS */
+  .ats-title {
+    font-size: 12px;
+  }
+
+}

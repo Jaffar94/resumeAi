@@ -53,6 +53,10 @@ Return ONLY JSON:
   "missing": [],
   "rewrite": ""
 }
+SCORING RULE:
+- All scores MUST be between 0 and 100
+- Do NOT return values like 7 or 8
+- Example: 72, 85, 63
 
 Resume:
 ${resumeText}

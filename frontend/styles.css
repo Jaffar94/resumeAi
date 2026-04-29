@@ -101,7 +101,7 @@ h1, h2, h3 {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 720px;
+  max-width: 1000px; /* Widened for dashboard */
   padding: 40px 36px;
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
@@ -167,14 +167,52 @@ h1, h2, h3 {
   flex-shrink: 0;
 }
 
-/* ===== INPUT AREA ===== */
+/* ===== INPUT AREA & BUILDER FORM ===== */
+.mode-toggle {
+  display: flex;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  margin: 0 auto 32px;
+  width: fit-content;
+  border: 1px solid var(--border-subtle);
+}
+
+.mode-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, var(--indigo), var(--accent-bright));
+  color: white;
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+
 .input-area {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
-.role-input {
+.form-group {
+  display: flex;
+  gap: 14px;
+}
+.form-group > * {
+  flex: 1;
+}
+
+.role-input, .jd-input {
   width: 100%;
   padding: 14px 18px;
   border-radius: var(--radius-sm);
@@ -186,11 +224,16 @@ h1, h2, h3 {
   transition: all 0.25s ease;
 }
 
-.role-input::placeholder {
+.jd-input {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.role-input::placeholder, .jd-input::placeholder {
   color: var(--text-muted);
 }
 
-.role-input:focus {
+.role-input:focus, .jd-input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(129,140,248,0.15);
@@ -407,10 +450,61 @@ h1, h2, h3 {
   margin-top: 16px;
 }
 
-/* ===== RESULTS ===== */
-.results {
-  /* stagger children handled inline */
+/* ===== RESULTS DASHBOARD ===== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+  align-items: start;
 }
+
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 20px;
+}
+
+.dashboard-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ===== TABS NAVIGATION ===== */
+.tabs-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.05);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  background: rgba(129,140,248,0.1);
+  box-shadow: inset 0 0 0 1px rgba(129,140,248,0.2);
+}
+
+
 
 .hero {
   text-align: center;
@@ -427,6 +521,7 @@ h1, h2, h3 {
 .score-gauge svg {
   width: 100%; height: 100%;
   transform: rotate(-90deg);
+  overflow: visible; /* Prevents shadow clipping */
 }
 
 .gauge-bg {
@@ -440,7 +535,7 @@ h1, h2, h3 {
   stroke-width: 10;
   stroke-linecap: round;
   transition: stroke-dashoffset 1.2s ease, stroke 0.5s ease;
-  filter: drop-shadow(0 0 8px currentColor);
+  filter: drop-shadow(0 0 12px currentColor);
 }
 
 .score-value {
@@ -524,32 +619,54 @@ h1, h2, h3 {
   box-shadow: 0 0 12px rgba(52,211,153,0.3);
 }
 
-/* ===== TOP FIXES ===== */
+/* ===== TOP FIXES (REDESIGNED) ===== */
 .top-fixes {
-  margin-top: 24px;
-  padding: 18px;
-  border-radius: var(--radius-md);
-  background: var(--red-dim);
-  border: 1px solid rgba(248,113,113,0.15);
+  margin-top: 10px;
 }
 
 .top-fixes h3 {
-  font-size: 15px;
-  color: var(--red);
-  margin-bottom: 10px;
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.top-fixes ul {
-  padding-left: 20px;
+.fix-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.top-fixes li {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
+.fix-card {
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(145deg, rgba(248,113,113,0.1), rgba(248,113,113,0.05));
+  border: 1px solid rgba(248,113,113,0.2);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: transform 0.2s ease;
+}
+
+.fix-card:hover {
+  transform: translateX(4px);
+  border-color: rgba(248,113,113,0.4);
+}
+
+.fix-icon {
+  font-size: 20px;
+  line-height: 1;
+  background: rgba(248,113,113,0.2);
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--red);
+}
+
+.fix-content {
+  font-size: 14px;
+  color: var(--text-primary);
   line-height: 1.5;
 }
 
@@ -808,6 +925,15 @@ h1, h2, h3 {
 .stagger-9 { animation-delay: 0.45s; opacity: 0; animation-fill-mode: forwards; }
 
 /* ===== RESPONSIVE ===== */
+@media (max-width: 860px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-left {
+    position: static;
+  }
+}
+
 @media (max-width: 640px) {
   .app { padding: 20px 12px 40px; }
 
@@ -826,4 +952,126 @@ h1, h2, h3 {
   .benefits { gap: 10px; }
   .progress-steps { gap: 6px; }
   .p-step-label { font-size: 10px; }
+}
+
+/* ===== RESUME TEMPLATE (PRINT ONLY) ===== */
+.resume-template {
+  display: none;
+}
+
+.hidden-screen {
+  display: none;
+}
+
+@page {
+  margin: 0; /* Removes default browser headers/footers/timestamps */
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .hidden-screen {
+    display: block !important;
+  }
+  .tabs-nav {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 1cm; /* Add safe margin since we stripped the page margin */
+  }
+  .app::before, .app::after, .orb-3 {
+    display: none !important;
+  }
+  .glass {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    background: transparent !important;
+  }
+  .btn, .copy-btn, .mode-toggle, .input-area, .generated-result h2, .generated-result p.hero-sub {
+    display: none !important;
+  }
+  * {
+    color: black !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Show only the resume template on print if we are generating */
+  .resume-template.printing {
+    display: block !important;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.4;
+    padding: 0.5in;
+  }
+  .resume-template h1 {
+    font-size: 26pt;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #000 !important;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  .resume-template .contact-info {
+    font-size: 10pt;
+    color: #333 !important;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .resume-template h2 {
+    font-size: 12pt;
+    color: #000 !important;
+    border-bottom: 1px solid #000;
+    padding-bottom: 4px;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .resume-template p {
+    font-size: 10pt;
+    margin-bottom: 14px;
+    color: #222 !important;
+    text-align: justify;
+  }
+  .resume-template .job {
+    margin-bottom: 16px;
+  }
+  .resume-template .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-size: 11pt;
+    color: #000 !important;
+  }
+  .resume-template .job-title {
+    color: #000 !important;
+  }
+  .resume-template .job-dates {
+    color: #444 !important;
+    font-size: 10pt;
+    font-weight: 500;
+  }
+  .resume-template ul {
+    padding-left: 20px;
+    margin-top: 4px;
+    margin-bottom: 12px;
+  }
+  .resume-template li {
+    font-size: 10pt;
+    margin-bottom: 6px;
+    color: #222 !important;
+    text-align: left;
+  }
+  .resume-template .skills-list {
+    font-size: 10pt;
+    line-height: 1.8;
+    color: #222 !important;
+    text-align: left;
+  }
 }

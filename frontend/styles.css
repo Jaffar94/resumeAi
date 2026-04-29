@@ -963,34 +963,43 @@ h1, h2, h3 {
   display: none;
 }
 
-@page {
-  margin: 0; /* Removes default browser headers/footers/timestamps */
+.analyzer-print-template {
+  display: none;
 }
 
 /* ===== PRINT STYLES ===== */
 @media print {
-  .hidden-screen {
-    display: block !important;
+  @page {
+    margin: 0; /* Forces Chrome to hide headers/footers */
   }
-  .tabs-nav {
-    display: none !important;
+
+  /* Robust Print Isolation & Overflow Reset */
+  html, body, #root, .app, .glass, .generated-result {
+    display: block !important;
+    height: auto !important;
+    min-height: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    transform: none !important;
+  }
+
+  html {
+    background: white !important;
   }
   body {
     background: white !important;
     color: black !important;
-    margin: 1cm; /* Add safe margin since we stripped the page margin */
+    margin: 1.5cm !important; /* Safe printable area */
   }
-  .app::before, .app::after, .orb-3 {
-    display: none !important;
-  }
-  .glass {
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    max-width: 100% !important;
-    background: transparent !important;
-  }
-  .btn, .copy-btn, .mode-toggle, .input-area, .generated-result h2, .generated-result p.hero-sub {
+
+  .hidden-screen, .tabs-nav, .btn, .copy-btn, .mode-toggle, .input-area, .generated-result, .dashboard-grid, .app::before, .app::after, .orb-3, .hero-main {
     display: none !important;
   }
   * {
@@ -1004,7 +1013,8 @@ h1, h2, h3 {
     display: block !important;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     line-height: 1.4;
-    padding: 0.5in;
+    width: 100%;
+    box-sizing: border-box;
   }
   .resume-template h1 {
     font-size: 26pt;
@@ -1013,6 +1023,7 @@ h1, h2, h3 {
     color: #000 !important;
     text-align: center;
     letter-spacing: 0.5px;
+    text-transform: capitalize;
   }
   .resume-template .contact-info {
     font-size: 10pt;
@@ -1035,7 +1046,7 @@ h1, h2, h3 {
     font-size: 10pt;
     margin-bottom: 14px;
     color: #222 !important;
-    text-align: justify;
+    text-align: left;
   }
   .resume-template .job {
     margin-bottom: 16px;
@@ -1048,9 +1059,12 @@ h1, h2, h3 {
     margin-bottom: 4px;
     font-size: 11pt;
     color: #000 !important;
+    width: 100%;
+    box-sizing: border-box;
   }
   .resume-template .job-title {
     color: #000 !important;
+    text-transform: capitalize;
   }
   .resume-template .job-dates {
     color: #444 !important;
@@ -1073,5 +1087,67 @@ h1, h2, h3 {
     line-height: 1.8;
     color: #222 !important;
     text-align: left;
+  }
+
+  /* ===== ANALYZER PRINT TEMPLATE ===== */
+  .analyzer-print-template.printing {
+    display: block !important;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .analyzer-print-template .print-header {
+    border-bottom: 2px solid #000;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .analyzer-print-template .print-header h1 {
+    font-size: 24pt;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #000 !important;
+    text-transform: capitalize;
+  }
+  .analyzer-print-template .print-header p {
+    font-size: 11pt;
+    margin: 4px 0;
+    color: #222 !important;
+  }
+  .analyzer-print-template h2 {
+    font-size: 14pt;
+    color: #000 !important;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 6px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+  .analyzer-print-template p {
+    font-size: 10pt;
+    margin-bottom: 14px;
+    color: #333 !important;
+  }
+  .analyzer-print-template .print-list {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  .analyzer-print-template .print-list li {
+    font-size: 10pt;
+    margin-bottom: 6px;
+    color: #222 !important;
+  }
+  .analyzer-print-template .print-skills {
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  .analyzer-print-template .print-skills p {
+    margin: 6px 0;
+  }
+  .analyzer-print-template .rewrite-text {
+    font-style: italic;
+    padding: 16px;
+    border-left: 4px solid #555;
   }
 }

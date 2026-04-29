@@ -81,24 +81,48 @@ RESUME TEXT:
 ${resumeText}
 `;
 
-  console.log("📡 Calling Gemini...");
+  /* Models ordered by availability (most stable first) */
+  const models = [
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-2.5-flash",
+  ];
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.2 },
-      }),
+  let raw;
+
+  for (const model of models) {
+    console.log(`📡 Trying ${model}...`);
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.2 },
+        }),
+      }
+    );
+
+    raw = await res.json();
+
+    if (res.status === 503 || raw?.error?.code === 503) {
+      console.log(`⚠️ ${model} overloaded, trying next...`);
+      await new Promise((r) => setTimeout(r, 1000));
+      continue;
     }
-  );
 
-  const raw = await res.json();
-  console.log("🔍 RAW:", JSON.stringify(raw, null, 2));
+    if (raw.error) {
+      console.log(`⚠️ ${model} error: ${raw.error.message}`);
+      continue;
+    }
 
-  if (raw.error) {
+    console.log(`✅ Success with ${model}`);
+    break;
+  }
+
+  if (raw?.error) {
     throw new Error(raw.error.message);
   }
 

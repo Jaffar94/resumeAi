@@ -23,9 +23,9 @@ function cleanText(text = "") {
     .trim();
 }
 
-/* ---------- GEMINI ---------- */
-async function callGemini(resumeText, role) {
-  const prompt = `You are a world-class resume analyst who combines the expertise of a senior technical recruiter, an ATS (Applicant Tracking System) engineer, and a career coach with 15+ years of experience at top companies (Google, Meta, Amazon).
+/* ---------- SHARED PROMPT ---------- */
+function buildPrompt(resumeText, role) {
+  return `You are a world-class resume analyst who combines the expertise of a senior technical recruiter, an ATS (Applicant Tracking System) engineer, and a career coach with 15+ years of experience at top companies (Google, Meta, Amazon).
 
 TARGET ROLE: "${role || "Not specified — infer the best-fit role from the resume content"}"
 
@@ -78,71 +78,24 @@ RESPONSE FORMAT: Return ONLY valid JSON with no markdown, no explanation, no cod
 {"ats_score","matched_keywords","score","summary","detected_role","level","top_fixes","skills","missing_keywords","breakdown":{"clarity","impact","skills","structure"},"good","improve","missing","rewrite"}
 
 RESUME TEXT:
-${resumeText}
-`;
+${resumeText}`;
+}
 
-  /* Models ordered by availability (most stable first) */
-  const models = [
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-2.0-flash",
-  ];
-
-  let raw;
-
-  for (const model of models) {
-    console.log(`📡 Trying ${model}...`);
-
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2 },
-        }),
-      }
-    );
-
-    raw = await res.json();
-
-    if (res.status === 503 || raw?.error?.code === 503) {
-      console.log(`⚠️ ${model} overloaded, trying next...`);
-      await new Promise((r) => setTimeout(r, 1000));
-      continue;
-    }
-
-    if (raw.error) {
-      console.log(`⚠️ ${model} error: ${raw.error.message}`);
-      continue;
-    }
-
-    console.log(`✅ Success with ${model}`);
-    break;
-  }
-
-  if (raw?.error) {
-    throw new Error(raw.error.message);
-  }
-
-  let text =
-    raw?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
+/* ---------- PARSE AI RESPONSE ---------- */
+function parseResponse(text) {
   text = text.trim().replace(/```json|```/g, "");
-
-  let parsed;
-
   try {
-    parsed = JSON.parse(text);
+    return JSON.parse(text);
   } catch {
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("No JSON found");
-    parsed = JSON.parse(match[0]);
+    if (!match) throw new Error("No JSON found in response");
+    return JSON.parse(match[0]);
   }
+}
 
-  /* ---------- CLEAN + SAFE ---------- */
-  parsed = {
+/* ---------- SANITIZE RESULT ---------- */
+function sanitize(parsed) {
+  return {
     ats_score: parsed.ats_score ?? 0,
     matched_keywords: parsed.matched_keywords ?? [],
     score: parsed.score ?? 0,
@@ -163,10 +116,117 @@ ${resumeText}
     missing: (parsed.missing || []).map(cleanText),
     rewrite: cleanText(parsed.rewrite ?? ""),
   };
+}
 
-  console.log("✅ FINAL:", parsed);
+/* ---------- GEMINI PROVIDER ---------- */
+async function tryGemini(prompt) {
+  const models = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+  ];
 
-  return parsed;
+  for (const model of models) {
+    try {
+      console.log(`📡 [Gemini] Trying ${model}...`);
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.2 },
+          }),
+        }
+      );
+
+      const raw = await res.json();
+
+      if (res.status === 503 || res.status === 429 || raw?.error) {
+        console.log(`⚠️ [Gemini] ${model} failed: ${raw?.error?.message || res.status}`);
+        continue;
+      }
+
+      const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      if (!text) continue;
+
+      console.log(`✅ [Gemini] Success with ${model}`);
+      return parseResponse(text);
+    } catch (err) {
+      console.log(`⚠️ [Gemini] ${model} exception: ${err.message}`);
+      continue;
+    }
+  }
+
+  return null; // all Gemini models failed
+}
+
+/* ---------- GROQ PROVIDER ---------- */
+async function tryGroq(prompt) {
+  const models = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768",
+  ];
+
+  for (const model of models) {
+    try {
+      console.log(`📡 [Groq] Trying ${model}...`);
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.2,
+        }),
+      });
+
+      const raw = await res.json();
+
+      if (res.status === 429 || res.status === 503 || raw?.error) {
+        console.log(`⚠️ [Groq] ${model} failed: ${raw?.error?.message || res.status}`);
+        continue;
+      }
+
+      const text = raw?.choices?.[0]?.message?.content || "";
+      if (!text) continue;
+
+      console.log(`✅ [Groq] Success with ${model}`);
+      return parseResponse(text);
+    } catch (err) {
+      console.log(`⚠️ [Groq] ${model} exception: ${err.message}`);
+      continue;
+    }
+  }
+
+  return null; // all Groq models failed
+}
+
+/* ---------- MAIN ANALYZE FUNCTION ---------- */
+async function analyzeResume(resumeText, role) {
+  const prompt = buildPrompt(resumeText, role);
+
+  // Try Gemini first, then Groq
+  let parsed = await tryGemini(prompt);
+
+  if (!parsed) {
+    console.log("🔄 All Gemini models failed, falling back to Groq...");
+    parsed = await tryGroq(prompt);
+  }
+
+  if (!parsed) {
+    throw new Error("All AI providers failed");
+  }
+
+  const result = sanitize(parsed);
+  console.log("✅ FINAL:", result);
+  return result;
 }
 
 /* ---------- FALLBACK ---------- */
@@ -175,10 +235,10 @@ function fallback() {
     ats_score: 50,
     matched_keywords: [],
     score: 60,
-    summary: "Basic resume detected",
+    summary: "Could not fully analyze — AI services are temporarily busy. Please try again in a moment.",
     detected_role: "Unknown",
     level: "Intermediate",
-    top_fixes: ["Add achievements", "Improve summary"],
+    top_fixes: ["Add quantified achievements", "Include a professional summary", "Add relevant keywords for your target role"],
     skills: [],
     missing_keywords: ["Projects"],
     breakdown: {
@@ -187,10 +247,10 @@ function fallback() {
       skills: 60,
       structure: 70,
     },
-    good: ["Basic structure"],
-    improve: ["Add measurable results"],
-    missing: ["Projects"],
-    rewrite: "Basic candidate profile.",
+    good: ["Basic structure present"],
+    improve: ["Add measurable results to each bullet point"],
+    missing: ["Projects section", "Professional summary"],
+    rewrite: "Experienced professional seeking to leverage skills and expertise in a challenging role.",
   };
 }
 
@@ -211,7 +271,7 @@ app.post("/analyze", upload.single("resume"), async (req, res) => {
 
     console.log("📄 Resume length:", text.length);
 
-    const result = await callGemini(text, role);
+    const result = await analyzeResume(text, role);
     return res.json(result);
 
   } catch (err) {

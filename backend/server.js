@@ -210,7 +210,7 @@ async function analyzeResume(resumeText, role, jobDescription) {
 
 /* ---------- GENERATOR PROMPT ---------- */
 function buildGeneratorPrompt(name, contact, jobDescription, brainDump) {
-  return `You are an expert Executive Resume Writer. Your task is to take the user's messy notes and generate a perfectly structured, professional resume.
+  return `You are an elite, FAANG-level Executive Resume Writer. Your task is to take the user's messy brain-dump and craft a premium, highly ATS-optimized, top-tier professional resume.
 
 USER INFO:
 Name: ${name}
@@ -222,15 +222,15 @@ ${jobDescription || "None provided"}
 USER'S MESSY NOTES / BRAIN DUMP:
 ${brainDump}
 
-INSTRUCTIONS:
-1. "summary" (40-60 words): Write a powerful, professional summary tailored to the target JD.
-2. "experience" (array of objects): Extract all past jobs from the notes. For each job, return:
-   - "title": Cleaned up job title.
-   - "company": Company name.
+STRICT INSTRUCTIONS:
+1. "summary" (40-60 words): Write an authoritative, high-impact professional summary. Highlight key strengths, years of experience (inferred from dates), and align perfectly with the target JD. Use strong adjectives. DO NOT hallucinate facts.
+2. "experience" (array of objects): Extract ONLY past jobs explicitly mentioned. DO NOT invent companies or roles. For each job:
+   - "title": Cleaned up, professional job title.
+   - "company": Company name explicitly stated.
    - "dates": Best guess at dates.
-   - "bullets" (array of strings): 3-5 highly professional, action-oriented bullet points. Infer reasonable metrics if appropriate, but keep it realistic. Use strong action verbs. DO NOT include any bullet characters (•, *, -) or emojis in the text itself.
-3. "education" (array of objects): Extract education info (degree, school, year) if any, else empty array.
-4. "skills" (array of strings): Extract ALL skills, languages, tools, and software explicitly mentioned in the notes (e.g. Python, AutoCAD, Customer Service). If the notes are sparse, infer additional highly relevant professional skills based on their experience and the target JD. You MUST provide at least 5-10 skills.
+   - "bullets" (array of strings): Generate 3-5 phenomenal bullet points using the XYZ formula. You MUST infer professional metrics ONLY for responsibilities actually mentioned. Use extremely strong action verbs. DO NOT use bullet characters or emojis.
+3. "education" (array of objects): Extract ONLY education explicitly mentioned. DO NOT invent schools (like Stanford) or degrees. If no education is mentioned, return an empty array.
+4. "skills" (array of strings): Extract ALL hard skills, tools, and languages explicitly mentioned. Then infer additional highly relevant professional skills to ensure a list of 10-15 elite skills tailored to the JD.
 
 RESPONSE FORMAT: Return ONLY valid JSON with no markdown formatting.
 {"summary":"...","experience":[{"title":"...","company":"...","dates":"...","bullets":["..."]}],"education":[{"degree":"...","school":"...","year":"..."}],"skills":["..."]}

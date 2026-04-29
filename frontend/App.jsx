@@ -381,15 +381,72 @@ export default function App() {
           </div>
         )}
 
+        {/* ====== ANALYZER PRINT TEMPLATE ====== */}
+        {data && mode === "analyze" && (
+          <div className="analyzer-print-template printing">
+            <div className="print-header">
+              <h1>Resume Analysis Report</h1>
+              <p><strong>Target Role:</strong> {data.detected_role || "Not specified"}</p>
+              <p><strong>ATS Compatibility Score:</strong> {data.ats_score || score}%</p>
+            </div>
+
+            <h2>Overall Assessment</h2>
+            <p>{data.summary}</p>
+
+            {data.top_fixes?.length > 0 && (
+              <>
+                <h2>Priority Action Items</h2>
+                <ul className="print-list">
+                  {data.top_fixes.map((f, i) => <li key={i}>{f}</li>)}
+                </ul>
+              </>
+            )}
+
+            <h2>Skills Analysis</h2>
+            <div className="print-skills">
+              <p><strong>✅ Matched Keywords:</strong> {data.matched_keywords?.join(", ") || "None"}</p>
+              <p><strong>⚠️ Missing Keywords:</strong> {data.missing_keywords?.join(", ") || "None"}</p>
+              <p><strong>ℹ️ Other Detected Skills:</strong> {data.skills?.join(", ") || "None"}</p>
+            </div>
+
+            {data.improve?.length > 0 && (
+              <>
+                <h2>Detailed Feedback: Areas for Improvement</h2>
+                <ul className="print-list">
+                  {data.improve.map((f, i) => <li key={i}>{f}</li>)}
+                </ul>
+              </>
+            )}
+
+            {data.good?.length > 0 && (
+              <>
+                <h2>Detailed Feedback: Strengths</h2>
+                <ul className="print-list">
+                  {data.good.map((f, i) => <li key={i}>{f}</li>)}
+                </ul>
+              </>
+            )}
+
+            {data.rewrite && (
+              <>
+                <h2>AI Suggested Summary Rewrite</h2>
+                <p className="rewrite-text">{data.rewrite}</p>
+              </>
+            )}
+          </div>
+        )}
+
         {/* ====== GENERATED RESUME RESULT ====== */}
         {data && mode === "build" && (
-          <div className="generated-result fade-in" style={{ textAlign: "center" }}>
-            <h2 className="gradient-text" style={{ fontSize: "32px", marginBottom: "16px" }}>Resume Generated Successfully! ✨</h2>
-            <p className="hero-sub" style={{ marginBottom: "32px" }}>Your professional resume is ready to download.</p>
-            
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', maxWidth: "500px", margin: "0 auto" }}>
-              <button className="btn reset" onClick={() => setData(null)}>← Edit Info</button>
-              <button className="btn cta-btn" onClick={() => window.print()}>📄 Download PDF Resume</button>
+          <>
+            <div className="generated-result fade-in" style={{ textAlign: "center" }}>
+              <h2 className="gradient-text" style={{ fontSize: "32px", marginBottom: "16px" }}>Resume Generated Successfully! ✨</h2>
+              <p className="hero-sub" style={{ marginBottom: "32px" }}>Your professional resume is ready to download.</p>
+              
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', maxWidth: "500px", margin: "0 auto" }}>
+                <button className="btn reset" onClick={() => setData(null)}>← Edit Info</button>
+                <button className="btn cta-btn" onClick={() => window.print()}>📄 Download PDF Resume</button>
+              </div>
             </div>
             
             {/* The actual printable template (hidden via CSS until printed) */}
@@ -446,7 +503,7 @@ export default function App() {
                 </>
               )}
             </div>
-          </div>
+          </>
         )}
 
       </div>

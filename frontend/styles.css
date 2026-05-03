@@ -970,7 +970,8 @@ h1, h2, h3 {
 /* ===== PRINT STYLES ===== */
 @media print {
   @page {
-    margin: 0; /* Forces Chrome to hide headers/footers */
+    size: auto;
+    margin: 15mm; /* Hide default browser header/footer (date, URL, etc) */
   }
 
   /* Robust Print Isolation & Overflow Reset */
@@ -986,17 +987,13 @@ h1, h2, h3 {
     margin: 0 !important;
     box-shadow: none !important;
     border: none !important;
-    background: transparent !important;
+    background: white !important;
     transform: none !important;
   }
 
-  html {
-    background: white !important;
-  }
   body {
-    background: white !important;
-    color: black !important;
-    margin: 1.5cm !important; /* Safe printable area */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .hidden-screen, .tabs-nav, .btn, .copy-btn, .mode-toggle, .input-area, .generated-result, .dashboard-grid, .app::before, .app::after, .orb-3, .hero-main {
@@ -1041,6 +1038,7 @@ h1, h2, h3 {
 
   .resume-section {
     margin-bottom: 24px;
+    page-break-inside: avoid;
   }
 
   .resume-section h2 {
@@ -1062,6 +1060,7 @@ h1, h2, h3 {
 
   .job {
     margin-bottom: 18px;
+    page-break-inside: avoid;
   }
 
   .job-header {
@@ -1333,7 +1332,23 @@ h1, h2, h3 {
   filter: brightness(1.1);
 }
 
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .prefill-btn[disabled] {
-  opacity: 0.7;
+  opacity: 0.8;
   cursor: wait;
 }

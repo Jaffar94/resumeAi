@@ -1060,7 +1060,7 @@ h1, h2, h3 {
     padding: 0 !important;
   }
 
-  .hidden-screen, .tabs-nav, .btn, .copy-btn, .mode-toggle, .input-area, .generated-result, .dashboard-grid, .app::before, .app::after, .orb-3, .hero-main {
+  .hidden-screen, .tabs-nav, .btn, .copy-btn, .mode-toggle, .input-area, .generated-result, .dashboard-grid, .app::before, .app::after, .orb-1, .orb-2, .orb-3, .orb-4, .hero-main {
     display: none !important;
   }
   * {

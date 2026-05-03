@@ -244,8 +244,8 @@ PHASE 2: ELITE OUTPUT GENERATION
 2. ZERO HALLUCINATION: If a specific percentage or dollar amount is not in the data, do NOT make up a precise number (like "43%"). Instead, use high-impact power verbs and logical impact descriptors (e.g., "Led substantial growth" or "Significantly reduced costs").
 2. ATS OPTIMIZATION: Weave in the top 5-7 skills from the JD naturally into the bullet points.
 3. ACHIEVEMENTS > TASKS: Do not list duties. Use the X-Y-Z formula (Accomplished [X] as measured by [Y] by doing [Z]) to highlight results. CRITICAL: Quantify at least 60% of your bullets with numbers (%, $, #, or scale) to prove impact.
-4. BREVITY: Target a high-impact single-page layout for most candidates. However, if the candidate has 10+ years of deep experience or extensive company history, you may prioritize detail over page count. Aim for 3-4 bullets per role. 
-5. CORE COMPETENCIES: Categorize the 'skills' array into 'Technical' and 'Core Competencies' (e.g., Strategic Leadership, Stakeholder Management) to ensure the ATS flags high-level expertise immediately.
+4. SPACE MANAGEMENT: Your goal is a perfectly full single-page resume. If the content is slightly over (e.g., 1.2 pages), self-edit for extreme conciseness to force it onto ONE page. Only allow a 2nd page if the candidate has 12+ years of experience and significant achievements that cannot be cut.
+5. BREVITY: Aim for 3-4 bullets per role. Use high-impact verbs. Prioritize impact over length.
 6. SHOW, DON'T TELL: Demonstrate soft skills (leadership, problem-solving) through specific achievement bullets rather than just listing them as words.
 7. PROMOTIONS: Clearly separate multiple roles at the same company to show career progression.
 8. EDUCATION: Extract relevant coursework and honors to validate the candidate's expertise.

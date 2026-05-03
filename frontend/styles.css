@@ -96,6 +96,26 @@ h1, h2, h3 {
   66% { transform: translate(-20px, 25px) scale(0.95); }
 }
 
+@keyframes cardEnter {
+  0% { opacity: 0; transform: translateY(-40px) scale(0.9) rotateX(-10deg); }
+  60% { transform: translateY(5px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0); }
+}
+
+@keyframes cardExit {
+  0% { opacity: 1; transform: scale(1); max-height: 500px; margin-top: 20px; }
+  100% { opacity: 0; transform: scale(0.9); max-height: 0; margin-top: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; }
+}
+
+.form-card.removing {
+  animation: cardExit 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
+.form-card {
+  animation: cardEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 /* ===== MAIN CARD ===== */
 .glass {
   position: relative;
@@ -1229,14 +1249,23 @@ h1, h2, h3 {
 }
 
 .form-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 4px solid var(--accent); /* Premium accent border */
   border-radius: 12px;
-  padding: 24px;
-  padding-top: 45px; /* Increased to give button space */
-  margin-top: 15px;
+  padding: 28px;
+  padding-top: 45px;
+  margin-top: 20px;
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.form-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 15px rgba(129, 140, 248, 0.1);
 }
 
 .form-card .form-grid {
@@ -1250,27 +1279,28 @@ h1, h2, h3 {
 
 .remove-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  padding: 5px 10px;
-  border-radius: 8px;
-  font-size: 10px;
+  top: 16px;
+  right: 16px;
+  background: rgba(248, 113, 113, 0.08);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  padding: 6px 14px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(8px);
+  z-index: 10;
 }
 
 .remove-btn:hover {
-  background: #ef4444;
+  background: #f87171;
   color: white;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
-  transform: translateY(-1px);
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 4px 15px rgba(248, 113, 113, 0.4);
 }
 
 .wizard-nav button {

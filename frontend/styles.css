@@ -963,28 +963,31 @@ h1, h2, h3 {
 }
 
 .job-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 20px;
-  align-items: start;
-  margin-bottom: 4px;
+  display: table;
   width: 100%;
+  margin-bottom: 4px;
+  border-collapse: collapse;
 }
 
 .job-title {
+  display: table-cell;
+  vertical-align: top;
+  text-align: left;
   font-size: 11pt;
   font-weight: 700;
   color: #000 !important;
-  min-width: 0;
-  word-wrap: break-word;
+  padding-right: 20px; /* Safety gap */
 }
 
 .job-dates {
+  display: table-cell;
+  vertical-align: top;
+  text-align: right;
   font-size: 10pt;
   color: #444 !important;
   font-weight: 600;
-  text-align: right;
   white-space: nowrap;
+  width: 1%; /* Forces cell to be as small as its content */
 }
 
 .resume-section h2 {
@@ -1013,11 +1016,16 @@ h1, h2, h3 {
     margin: 0; /* This officially kills the browser's header/footer */
   }
 
-  body {
-    padding: 1.5cm !important; /* Add padding here so content doesn't touch edges */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  body {
+    padding: 1.5cm !important; /* This creates the professional document margin internally */
   }
 
   .hidden-screen, .tabs-nav, .btn, .copy-btn, .mode-toggle, .input-area, .generated-result, .dashboard-grid, .app::before, .app::after, .orb-3, .hero-main {

@@ -283,7 +283,14 @@ export default function App() {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
                       <h3 style={{ margin: 0 }}>Contact Information</h3>
                       <label className="prefill-btn">
-                        {parsing ? "Parsing..." : "⚡ Pre-fill from old Resume"}
+                        {parsing ? (
+                          <>
+                            <div className="spinner"></div>
+                            Parsing...
+                          </>
+                        ) : (
+                          "⚡ Pre-fill from old Resume"
+                        )}
                         <input type="file" accept=".pdf" hidden onChange={handlePreFill} disabled={parsing} />
                       </label>
                     </div>

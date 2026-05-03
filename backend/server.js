@@ -208,36 +208,40 @@ async function analyzeResume(resumeText, role, jobDescription) {
 
 /* ---------- GENERATOR PROMPT ---------- */
 function buildGeneratorPrompt(formData) {
-  const { name, email, phone, location, linkedin, website, jobDescription, experiences, educations, skills } = formData;
+  const { name, email, phone, location, linkedin, website, jobDescription, experiences, educations, projects, skills } = formData;
   
   const hasExperience = experiences && experiences.length > 0 && experiences[0].company;
 
-  return `You are an elite, FAANG-level Executive Resume Writer. Your task is to take the user's structured data and craft a premium, high-impact professional resume.
+  return `You are an elite, FAANG-level Executive Resume Writer and ATS Optimization Expert. Your goal is to transform the user's data into a top 1% professional resume that beats every ATS filter and wows human recruiters.
 
-${!hasExperience ? "CRITICAL: The candidate is a student or entry-level with no formal job experience. You must focus heavily on their academic projects, technical skills, and educational background to prove their potential." : ""}
+${!hasExperience ? "CRITICAL: The candidate is a student/entry-level. Focus heavily on academic excellence, technical projects, and internships to demonstrate high potential." : ""}
 
 USER DATA:
 - Name: ${name}
 - Contact: ${email} | ${phone} | ${location} | ${linkedin} | ${website || ""}
 - Target JD: ${jobDescription || "Not provided"}
 
-EXPERIENCE/INTERNSHIPS:
+EXPERIENCE:
 ${experiences.map(e => `- ${e.title} at ${e.company} (${e.dates}): ${e.description}`).join('\n')}
+
+PROJECTS:
+${projects.map(p => `- ${p.name} (${p.tech}): ${p.description}`).join('\n')}
 
 EDUCATION:
 ${educations.map(e => `- ${e.degree} from ${e.school} (${e.dates}): ${e.description || ""}`).join('\n')}
 
-SKILLS/PROJECTS/NOTES:
+ADDITIONAL INFO/SKILLS:
 ${skills}
 
-STRICT INSTRUCTIONS:
-1. "summary": Write a powerful 2-3 sentence profile. Use only the user's provided experience and skills.
-2. "experience": For each entry, generate 3-5 high-impact bullet points using the X-Y-Z formula. SORT all experience entries in reverse chronological order (newest first).
-3. "projects": ONLY extract projects explicitly mentioned. If no projects are mentioned, return an empty array [].
-4. "education": For each entry, provide "school", "degree", "dates", and a "details" field. Use the education description to extract 2-3 key honors, coursework, or activities. SORT entries newest first.
-5. "skills": Generate a curated list of 12-15 professional skills tailored to the Target JD.
+CORE INSTRUCTIONS FOR ELITE OUTPUT:
+1. STRICT GROUNDING: You are FORBIDDEN from inventing fake job titles, companies, dates, or degrees. Use only the provided user data as the absolute ground truth.
+2. CONTEXTUAL KEYWORDS: Identify the top keywords from the Target JD. Weave them into the resume ONLY if they are logically related to the user's actual experience. (e.g., If the user built a website, you can use "Frontend Architecture," but do not say they used "Cloud" unless they mentioned it).
+3. X-Y-Z FORMULA: Rewrite experience bullets using: "Accomplished [X] as measured by [Y], by doing [Z]". Sharpen the language, but do not invent fake metrics.
+4. PROFESSIONAL SUMMARY: Write a 3-sentence profile based strictly on the provided facts. Align their existing strengths with the Target JD.
+5. PROJECTS & EDUCATION: Transform descriptions into professional entries. Extract honors/coursework from the education notes.
+6. SORTING: Sort experience and education in reverse chronological order (newest first).
 
-RESPONSE FORMAT: Return ONLY valid JSON with no markdown.
+RESPONSE FORMAT: Return ONLY valid JSON.
 {"summary":"...","experience":[{"title":"...","company":"...","dates":"...","bullets":["..."]}],"education":[{"degree":"...","school":"...","dates":"...","details":"..."}],"projects":[{"name":"...","tech":"...","bullets":["..."]}],"skills":["..."]}
 `;
 }

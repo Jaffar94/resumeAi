@@ -1084,6 +1084,13 @@ h1, h2, h3 {
     width: 100%;
     box-sizing: border-box;
     color: #1a1a1a !important;
+    background: white !important;
+  }
+
+  .resume-template.printing td {
+    padding-left: 1.5cm !important;
+    padding-right: 1.5cm !important;
+    background: white !important;
   }
 
   .resume-header {
@@ -1124,7 +1131,16 @@ h1, h2, h3 {
 
   .job {
     margin-bottom: 12px;
+    page-break-inside: auto; /* Allow the job bullets to split between pages */
+  }
+
+  .job-header {
     page-break-inside: avoid;
+    page-break-after: avoid; /* Keep title with the first bullet */
+  }
+
+  .resume-template li {
+    page-break-inside: avoid; /* Individual bullets don't split */
   }
 
   .resume-template ul {

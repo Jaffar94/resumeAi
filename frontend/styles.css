@@ -1108,9 +1108,8 @@ h1, h2, h3 {
   }
 
   .resume-section {
-    margin-top: 20px; /* Safety gap for page 2+ */
-    margin-bottom: 24px;
-    /* page-break-inside: auto; */
+    margin-top: 15px;
+    margin-bottom: 16px;
   }
 
   .resume-section h2 {
@@ -1119,12 +1118,12 @@ h1, h2, h3 {
 
   .resume-section p {
     font-size: 10pt;
-    margin-bottom: 8px;
-    line-height: 1.4;
+    margin-bottom: 6px;
+    line-height: 1.3;
   }
 
   .job {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     page-break-inside: avoid;
   }
 
@@ -1134,10 +1133,10 @@ h1, h2, h3 {
   }
 
   .resume-template li {
-    font-size: 10.5pt;
-    margin-bottom: 5px;
+    font-size: 10pt;
+    margin-bottom: 3px;
     color: #333 !important;
-    line-height: 1.4;
+    line-height: 1.3;
   }
 
   .skills-list {

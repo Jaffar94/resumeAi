@@ -232,19 +232,22 @@ export default function App() {
 
   return (
     <div className="app">
+      <div className="orb-1" />
+      <div className="orb-2" />
       <div className="orb-3" />
+      <div className="orb-4" />
       <div className="glass">
 
         {/* ====== HERO ====== */}
         {!data && (
           <div className="hero-main fade-in">
             <h1 className="gradient-text">
-              {mode === "analyze" ? "Analyze Your Resume" : "AI Resume Builder"}
+              {mode === "analyze" ? "The AI Resume Auditor" : "The AI Resume Architect"}
             </h1>
             <p className="hero-sub">
               {mode === "analyze" 
-                ? "AI-powered feedback to boost your ATS score and land more interviews."
-                : "Turn your messy notes into a perfectly formatted professional resume."}
+                ? "Get deep-analysis feedback, precision keyword scoring, and elite ATS optimization."
+                : "Engineered for high-impact results. Turn your career history into a world-class resume."}
             </p>
             
             <div className="mode-toggle">

@@ -36,7 +36,14 @@ function buildPrompt(resumeText, role, jobDescription) {
 TARGET ROLE: "${role || "Not specified — infer the best-fit role from the resume content"}"${jdSection}
 
 ANALYSIS INSTRUCTIONS:
-Analyze the resume below with the eye of a senior recruiter. Your feedback should be direct, professional, and coaching-oriented. Score conservatively but fairly — a score of 70-80 represents a very strong candidate.
+Analyze the resume below as an independent, unbiased industry expert. Your feedback must be brutally honest and objective, following universal ATS (Applicant Tracking System) and Fortune 500 recruitment standards.
+
+SCORING PHILOSOPHY (STRICT INDEPENDENCE):
+- THE 6-SECOND SCAN: Weigh the Professional Summary and the first 2 Job Entries most heavily (60% of score). If the value prop isn't clear here, the resume fails.
+- QUANTIFIED IMPACT: Penalize any bullet point that lacks numbers, percentages, or scale. This is the #1 reason for a low score.
+- KEYWORD ALIGNMENT: Strictly penalize if the resume does not naturally weave in the core requirements from the Job Description (if provided).
+- ACTION-DRIVEN: Reward only elite power verbs (Spearheaded, Orchestrated). Penalize passive voice.
+- OBJECTIVE BENCHMARK: A score of 90+ is extremely difficult to achieve. Be the gatekeeper.
 
 SCORING RUBRICS:
 
@@ -239,16 +246,16 @@ PHASE 1: DEEP UNDERSTANDING
 - Understand the Trajectory: Look at the dates and titles. Is this a career transition? A promotion path? Or an entry-level start?
 - Adjust the Tone: Match the professional standards of the industry (e.g., precise and metric-heavy for Tech/Finance, academic and skill-focused for Students).
 
-PHASE 2: ELITE OUTPUT GENERATION
-1. STRICT GROUNDING: Use ONLY the data provided. Never invent companies, dates, or degrees. 
-2. ZERO HALLUCINATION: If a specific percentage or dollar amount is not in the data, do NOT make up a precise number (like "43%"). Instead, use high-impact power verbs and logical impact descriptors (e.g., "Led substantial growth" or "Significantly reduced costs").
-2. ATS OPTIMIZATION: Weave in the top 5-7 skills from the JD naturally into the bullet points.
-3. ACHIEVEMENTS > TASKS: Do not list duties. Use the X-Y-Z formula (Accomplished [X] as measured by [Y] by doing [Z]) to highlight results. CRITICAL: Quantify at least 60% of your bullets with numbers (%, $, #, or scale) to prove impact.
-4. SPACE MANAGEMENT: Your goal is a perfectly full single-page resume. If the content is slightly over (e.g., 1.2 pages), self-edit for extreme conciseness to force it onto ONE page. Only allow a 2nd page if the candidate has 12+ years of experience and significant achievements that cannot be cut.
-5. BREVITY: Aim for 3-4 bullets per role. Use high-impact verbs. Prioritize impact over length.
-6. SHOW, DON'T TELL: Demonstrate soft skills (leadership, problem-solving) through specific achievement bullets rather than just listing them as words.
-7. PROMOTIONS: Clearly separate multiple roles at the same company to show career progression.
-8. EDUCATION: Extract relevant coursework and honors to validate the candidate's expertise.
+PHASE 2: ELITE OUTPUT GENERATION (TARGET SCORE: 95+)
+1. STRICT GROUNDING: Use ONLY the data provided. Never invent facts.
+1. THE "HOOK" SUMMARY (STRICT): Exactly 3 sentences: [Sentence 1: Identity + years of exp] -> [Sentence 2: Major value prop/track record] -> [Sentence 3: Top 3 core competencies].
+2. ACTION-METHOD-IMPACT (AMI) FORMULA: Every bullet MUST follow: [Action Verb] -> [Method] -> [Result].
+3. QUANTIFIED IMPACT (70% Rule): You MUST quantify 70% of bullets using %, $, #, or scale.
+4. BULLET CAP (EXTREME CONSTRAINT): Limit each job experience to exactly 4-6 HIGH-IMPACT bullets max. Any output with more than 6 bullets per role is a failure. Prioritize quality over quantity. 
+5. SPACE MANAGEMENT: Target a perfectly full single-page layout. If 2 pages, ensure the 2nd page is at least 50% full.
+6. CURATED SKILLS (STRICT CATEGORIZATION): Return exactly 8-10 skills total. YOU MUST prefix every skill with a category in CAPS. Example: 'STRATEGY: Risk Management' or 'TOOLS: Microsoft Excel'. This prevents a "wall of text" and looks elite.
+7. SECTION HIERARCHY: Summary -> Experience -> Projects -> Education -> Skills.
+8. ATS KEYWORD WEAVING: Naturally integrate top skills from the JD into bullet points.
 
 RESPONSE FORMAT: Return ONLY valid JSON.
 {"summary":"...","experience":[{"title":"...","company":"...","dates":"...","bullets":["..."]}],"education":[{"degree":"...","school":"...","dates":"...","details":"..."}],"projects":[{"name":"...","tech":"...","bullets":["..."]}],"skills":["..."]}
@@ -284,12 +291,11 @@ STRICT JSON FORMAT:
 }
 
 INSTRUCTIONS:
-- If a field is missing, use "".
-- DEEP EXTRACTION: Do not just copy-paste. Read the entire document carefully. 
-- PROMOTIONS (CRITICAL): If the user has multiple roles at the same company, YOU MUST EXTRACT EACH ONE SEPARATELY.
-- PROJECTS: If a project is mentioned within a job description, extract it into the 'projects' array.
-- SKILLS: Extract both hard technical skills and core competencies (e.g. Leadership, Strategy) mentioned throughout the text.
-- Return ONLY the JSON. No markdown. No conversational filler.`;
+- PROMOTIONS & MULTIPLE ROLES (CRITICAL): If the candidate has held multiple titles at the same company (e.g. 'Senior Manager' then 'Director'), YOU MUST extract each title as a SEPARATE entry in the 'experience' array. Do not group them into one.
+- LINGUISTIC CLEANUP: Strip away messy bullet characters, fix broken capitalization, and normalize date formats.
+- CONTEXTUAL INTELLIGENCE: Understand the career narrative. Identify high-value projects even if buried.
+- SKILL SYNTHESIS: Extract technical tools AND leadership competencies.
+- Return ONLY valid JSON. No conversational filler.`;
 }
 
 async function parseResumeToForm(resumeText) {

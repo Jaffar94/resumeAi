@@ -975,6 +975,8 @@ h1, h2, h3 {
   font-weight: 700;
   color: #000 !important;
   flex: 1;
+  min-width: 0; /* Critical for flex child wrapping */
+  overflow-wrap: break-word; /* Forces long words to wrap */
 }
 
 .job-dates {
@@ -1077,25 +1079,6 @@ h1, h2, h3 {
   .job {
     margin-bottom: 15px;
     page-break-inside: avoid;
-  }
-
-  .job-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start; /* Better for multi-line titles */
-    margin-bottom: 4px;
-    gap: 20px;
-  }
-
-  .job-title {
-    font-size: 11pt;
-    font-weight: 700;
-    color: #000 !important;
-    flex: 1; /* Takes up all available space */
-  }
-
-  .job-dates {
-    color: #444 !important;
   }
 
   .resume-template ul {

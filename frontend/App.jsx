@@ -31,14 +31,14 @@ export default function App() {
   
   // New Structured Builder State
   const [formStep, setFormStep] = useState(1);
-  const [experiences, setExperiences] = useState([{ company: "", title: "", dates: "", description: "" }]);
-  const [educations, setEducations] = useState([{ school: "", degree: "", dates: "", description: "" }]);
+  const [experiences, setExperiences] = useState([{ id: Date.now(), company: "", title: "", dates: "", description: "" }]);
+  const [educations, setEducations] = useState([{ id: Date.now() + 1, school: "", degree: "", dates: "", description: "" }]);
   const [skills, setSkills] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [website, setWebsite] = useState("");
-  const [projects, setProjects] = useState([{ name: "", tech: "", description: "" }]);
+  const [projects, setProjects] = useState([{ id: Date.now() + 2, name: "", tech: "", description: "" }]);
   const [parsing, setParsing] = useState(false);
 
   /* --- loading step rotation --- */
@@ -86,29 +86,38 @@ export default function App() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   /* --- builder helpers --- */
-  const addExperience = () => setExperiences([...experiences, { company: "", title: "", dates: "", description: "" }]);
-  const updateExperience = (i, field, val) => {
-    const newExp = [...experiences];
-    newExp[i][field] = val;
-    setExperiences(newExp);
+  const addExperience = () => setExperiences([{ id: Date.now(), company: "", title: "", dates: "", description: "" }, ...experiences]);
+  const updateExperience = (id, field, val) => {
+    setExperiences(experiences.map(exp => exp.id === id ? { ...exp, [field]: val } : exp));
   };
-  const removeExperience = (i) => setExperiences(experiences.filter((_, idx) => idx !== i));
+  const removeExperience = (id) => {
+    setExperiences(experiences.map(exp => exp.id === id ? { ...exp, isRemoving: true } : exp));
+    setTimeout(() => {
+      setExperiences(prev => prev.filter(exp => exp.id !== id));
+    }, 400);
+  };
 
-  const addEducation = () => setEducations([...educations, { school: "", degree: "", dates: "", description: "" }]);
-  const updateEducation = (i, field, val) => {
-    const newEdu = [...educations];
-    newEdu[i][field] = val;
-    setEducations(newEdu);
+  const addEducation = () => setEducations([{ id: Date.now(), school: "", degree: "", dates: "", description: "" }, ...educations]);
+  const updateEducation = (id, field, val) => {
+    setEducations(educations.map(edu => edu.id === id ? { ...edu, [field]: val } : edu));
   };
-  const removeEducation = (i) => setEducations(educations.filter((_, idx) => idx !== i));
+  const removeEducation = (id) => {
+    setEducations(educations.map(edu => edu.id === id ? { ...edu, isRemoving: true } : edu));
+    setTimeout(() => {
+      setEducations(prev => prev.filter(edu => edu.id !== id));
+    }, 400);
+  };
 
-  const addProject = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
-  const updateProject = (i, field, val) => {
-    const newProj = [...projects];
-    newProj[i][field] = val;
-    setProjects(newProj);
+  const addProject = () => setProjects([{ id: Date.now(), name: "", tech: "", description: "" }, ...projects]);
+  const updateProject = (id, field, val) => {
+    setProjects(projects.map(p => p.id === id ? { ...p, [field]: val } : p));
   };
-  const removeProject = (i) => setProjects(projects.filter((_, idx) => idx !== i));
+  const removeProject = (id) => {
+    setProjects(projects.map(p => p.id === id ? { ...p, isRemoving: true } : p));
+    setTimeout(() => {
+      setProjects(prev => prev.filter(p => p.id !== id));
+    }, 400);
+  };
 
   /* --- pre-fill logic --- */
   const handlePreFill = async (e) => {
@@ -131,9 +140,9 @@ export default function App() {
       if (result.location) setLocation(result.location);
       if (result.linkedin) setLinkedin(result.linkedin);
       if (result.website) setWebsite(result.website);
-      if (result.experiences && result.experiences.length > 0) setExperiences(result.experiences);
-      if (result.educations && result.educations.length > 0) setEducations(result.educations);
-      if (result.projects && result.projects.length > 0) setProjects(result.projects);
+      if (result.experiences) setExperiences(result.experiences.map(e => ({ ...e, id: Math.random() })));
+      if (result.educations) setEducations(result.educations.map(e => ({ ...e, id: Math.random() })));
+      if (result.projects) setProjects(result.projects.map(p => ({ ...p, id: Math.random() })));
       if (result.skills) setSkills(result.skills);
       
     } catch (err) {
@@ -313,15 +322,15 @@ export default function App() {
                       <h3>Professional Experience</h3>
                       <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addExperience}>+ Add Job</button>
                     </div>
-                    {experiences.map((exp, i) => (
-                      <div key={i} className="form-card">
+                    {experiences.map((exp) => (
+                      <div key={exp.id} className={`form-card ${exp.isRemoving ? "removing" : ""}`}>
                         <div className="form-grid">
-                          <input className="role-input" placeholder="Company" value={exp.company} onChange={(e) => updateExperience(i, "company", e.target.value)} />
-                          <input className="role-input" placeholder="Job Title" value={exp.title} onChange={(e) => updateExperience(i, "title", e.target.value)} />
-                          <input className="role-input" placeholder="Dates (e.g. 2021 - Present)" value={exp.dates} onChange={(e) => updateExperience(i, "dates", e.target.value)} />
+                          <input className="role-input" placeholder="Company" value={exp.company} onChange={(e) => updateExperience(exp.id, "company", e.target.value)} />
+                          <input className="role-input" placeholder="Job Title" value={exp.title} onChange={(e) => updateExperience(exp.id, "title", e.target.value)} />
+                          <input className="role-input" placeholder="Dates (e.g. 2021 - Present)" value={exp.dates} onChange={(e) => updateExperience(exp.id, "dates", e.target.value)} />
                         </div>
-                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="What did you do there? (Bullet points or a quick summary)" value={exp.description} onChange={(e) => updateExperience(i, "description", e.target.value)} />
-                        {experiences.length > 1 && <button className="remove-btn" onClick={() => removeExperience(i)}>Remove</button>}
+                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="What did you do there? (Bullet points or a quick summary)" value={exp.description} onChange={(e) => updateExperience(exp.id, "description", e.target.value)} />
+                        {experiences.length > 1 && <button className="remove-btn" onClick={() => removeExperience(exp.id)}>Remove</button>}
                       </div>
                     ))}
                   </div>
@@ -334,15 +343,15 @@ export default function App() {
                       <h3>Education</h3>
                       <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addEducation}>+ Add Education</button>
                     </div>
-                    {educations.map((edu, i) => (
-                      <div key={i} className="form-card">
+                    {educations.map((edu) => (
+                      <div key={edu.id} className={`form-card ${edu.isRemoving ? "removing" : ""}`}>
                         <div className="form-grid">
-                          <input className="role-input" placeholder="School/University" value={edu.school} onChange={(e) => updateEducation(i, "school", e.target.value)} />
-                          <input className="role-input" placeholder="Degree (e.g. B.S. in CS)" value={edu.degree} onChange={(e) => updateEducation(i, "degree", e.target.value)} />
-                          <input className="role-input" placeholder="Dates (e.g. 2020 - 2024)" value={edu.dates} onChange={(e) => updateEducation(i, "dates", e.target.value)} />
+                          <input className="role-input" placeholder="School/University" value={edu.school} onChange={(e) => updateEducation(edu.id, "school", e.target.value)} />
+                          <input className="role-input" placeholder="Degree (e.g. B.S. in CS)" value={edu.degree} onChange={(e) => updateEducation(edu.id, "degree", e.target.value)} />
+                          <input className="role-input" placeholder="Dates (e.g. 2020 - 2024)" value={edu.dates} onChange={(e) => updateEducation(edu.id, "dates", e.target.value)} />
                         </div>
-                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="Relevant coursework, honors, activities (e.g. Dean's List, Secretary of Robotics Club)..." value={edu.description} onChange={(e) => updateEducation(i, "description", e.target.value)} />
-                        {educations.length > 1 && <button className="remove-btn" onClick={() => removeEducation(i)}>Remove</button>}
+                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="Relevant coursework, honors, activities (e.g. Dean's List, Secretary of Robotics Club)..." value={edu.description} onChange={(e) => updateEducation(edu.id, "description", e.target.value)} />
+                        {educations.length > 1 && <button className="remove-btn" onClick={() => removeEducation(edu.id)}>Remove</button>}
                       </div>
                     ))}
                   </div>
@@ -355,14 +364,14 @@ export default function App() {
                       <h3>Key Projects</h3>
                       <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addProject}>+ Add Project</button>
                     </div>
-                    {projects.map((proj, i) => (
-                      <div key={i} className="form-card">
+                    {projects.map((proj) => (
+                      <div key={proj.id} className={`form-card ${proj.isRemoving ? "removing" : ""}`}>
                         <div className="form-grid">
-                          <input className="role-input" placeholder="Project Name" value={proj.name} onChange={(e) => updateProject(i, "name", e.target.value)} />
-                          <input className="role-input" placeholder="Tech Stack (e.g. React, Node, Python)" value={proj.tech} onChange={(e) => updateProject(i, "tech", e.target.value)} />
+                          <input className="role-input" placeholder="Project Name" value={proj.name} onChange={(e) => updateProject(proj.id, "name", e.target.value)} />
+                          <input className="role-input" placeholder="Technologies (e.g. React, Node.js)" value={proj.tech} onChange={(e) => updateProject(proj.id, "tech", e.target.value)} />
                         </div>
-                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="Describe the project and your key achievements..." value={proj.description} onChange={(e) => updateProject(i, "description", e.target.value)} />
-                        {projects.length > 1 && <button className="remove-btn" onClick={() => removeProject(i)}>Remove</button>}
+                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="Describe the project and your impact..." value={proj.description} onChange={(e) => updateProject(proj.id, "description", e.target.value)} />
+                        {projects.length > 1 && <button className="remove-btn" onClick={() => removeProject(proj.id)}>Remove</button>}
                       </div>
                     ))}
                   </div>

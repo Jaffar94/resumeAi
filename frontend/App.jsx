@@ -3,13 +3,6 @@ import "./styles.css";
 
 const CIRCUMFERENCE = 2 * Math.PI * 66;
 
-const STEPS = [
-  { icon: "📄", label: "Reading" },
-  { icon: "🔍", label: "Skills" },
-  { icon: "✨", label: "Clarity" },
-  { icon: "🎯", label: "Impact" },
-];
-
 export default function App() {
   const [file, setFile] = useState(null);
   const [role, setRole] = useState("");
@@ -28,7 +21,7 @@ export default function App() {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [brainDump, setBrainDump] = useState("");
-  
+
   // New Structured Builder State
   const [formStep, setFormStep] = useState(1);
   const [experiences, setExperiences] = useState([{ id: Date.now(), company: "", title: "", dates: "", description: "" }]);
@@ -41,12 +34,7 @@ export default function App() {
   const [projects, setProjects] = useState([{ id: Date.now() + 2, name: "", tech: "", description: "" }]);
   const [parsing, setParsing] = useState(false);
 
-  /* --- loading step rotation --- */
-  useEffect(() => {
-    if (!loading) return;
-    const t = setInterval(() => setStep((s) => (s + 1) % STEPS.length), 1200);
-    return () => clearInterval(t);
-  }, [loading]);
+
 
   /* --- score animation --- */
   useEffect(() => {
@@ -97,6 +85,26 @@ export default function App() {
     }, 400);
   };
 
+  const resetApp = () => {
+    setFile(null);
+    setData(null);
+    setScore(0);
+    setStep(0);
+    setRole("");
+    setJobDescription("");
+    setFormStep(1);
+    setName("");
+    setContact("");
+    setPhone("");
+    setLocation("");
+    setLinkedin("");
+    setWebsite("");
+    setSkills("");
+    setExperiences([{ id: Date.now(), company: "", title: "", dates: "", description: "" }]);
+    setEducations([{ id: Date.now() + 1, school: "", degree: "", dates: "", description: "" }]);
+    setProjects([{ id: Date.now() + 2, name: "", tech: "", description: "" }]);
+  };
+
   const addEducation = () => setEducations([{ id: Date.now(), school: "", degree: "", dates: "", description: "" }, ...educations]);
   const updateEducation = (id, field, val) => {
     setEducations(educations.map(edu => edu.id === id ? { ...edu, [field]: val } : edu));
@@ -123,7 +131,7 @@ export default function App() {
   const handlePreFill = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     setParsing(true);
     setError("");
     const fd = new FormData();
@@ -133,7 +141,7 @@ export default function App() {
       const res = await fetch(`${API_URL}/parse`, { method: "POST", body: fd });
       const result = await res.json();
       if (result.error) throw new Error(result.error);
-      
+
       if (result.name) setName(result.name);
       if (result.email) setContact(result.email);
       if (result.phone) setPhone(result.phone);
@@ -144,7 +152,7 @@ export default function App() {
       if (result.educations) setEducations(result.educations.map(e => ({ ...e, id: Math.random() })));
       if (result.projects) setProjects(result.projects.map(p => ({ ...p, id: Math.random() })));
       if (result.skills) setSkills(result.skills);
-      
+
     } catch (err) {
       console.error("❌ Pre-fill failed:", err);
       setError("Failed to parse resume. You can still fill the form manually.");
@@ -163,7 +171,7 @@ export default function App() {
     fd.append("resume", file);
     fd.append("role", role);
     fd.append("jobDescription", jobDescription);
-    
+
     setLoading(true);
     setError("");
     setData(null);
@@ -171,9 +179,9 @@ export default function App() {
     try {
       const res = await fetch(`${API_URL}/analyze`, { method: "POST", body: fd });
       const result = await res.json();
-      if (!result || typeof result !== "object") { 
+      if (!result || typeof result !== "object") {
         setError("Invalid server response. Please try again.");
-        return; 
+        return;
       }
       setData(result);
     } catch (err) {
@@ -186,6 +194,13 @@ export default function App() {
 
   /* --- generate --- */
   const generate = async () => {
+    // Validation
+    const hasExp = experiences.some(e => e.company.trim() || e.title.trim());
+    if (!name.trim() || !hasExp) {
+      setError("Please provide at least your Name and one Work Experience entry to generate a resume.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setData(null);
@@ -211,6 +226,26 @@ export default function App() {
       });
       const result = await res.json();
       if (result.error) throw new Error(result.error);
+
+      // Hard Cap: Force 6 bullets max per role/project (Fixes AI verbosity)
+      if (result.experience) {
+        result.experience = result.experience.map(exp => ({
+          ...exp,
+          bullets: (exp.bullets || []).slice(0, 6)
+        }));
+      }
+      if (result.projects) {
+        result.projects = result.projects.map(proj => ({
+          ...proj,
+          bullets: (proj.bullets || []).slice(0, 6)
+        }));
+      }
+
+      // Hard Cap: Force 10 skills max for an elite, uncluttered look
+      if (result.skills) {
+        result.skills = result.skills.slice(0, 10);
+      }
+
       setData(result);
     } catch (err) {
       console.error("❌ ERROR:", err.message);
@@ -245,15 +280,18 @@ export default function App() {
               {mode === "analyze" ? "The AI Resume Auditor" : "The AI Resume Architect"}
             </h1>
             <p className="hero-sub">
-              {mode === "analyze" 
+              {mode === "analyze"
                 ? "Get deep-analysis feedback, precision keyword scoring, and elite ATS optimization."
                 : "Engineered for high-impact results. Turn your career history into a world-class resume."}
             </p>
-            
-            <div className="mode-toggle">
-              <button className={`mode-btn ${mode === "analyze" ? "active" : ""}`} onClick={() => { setMode("analyze"); setError(""); }}>Analyzer</button>
-              <button className={`mode-btn ${mode === "build" ? "active" : ""}`} onClick={() => { setMode("build"); setError(""); }}>Builder</button>
-            </div>
+
+            {!loading && (
+              <div className="mode-toggle">
+                <div className={`slider-pill ${mode === "build" ? "right" : ""}`} />
+                <button className={`mode-btn ${mode === "analyze" ? "active" : ""}`} onClick={() => { setMode("analyze"); setError(""); }}>Analyzer</button>
+                <button className={`mode-btn ${mode === "build" ? "active" : ""}`} onClick={() => { setMode("build"); setError(""); }}>Builder</button>
+              </div>
+            )}
           </div>
         )}
 
@@ -276,7 +314,7 @@ export default function App() {
                   <p>{file ? file.name : "Drop your resume here or click to browse"}</p>
                   <p className="file-hint">PDF files only</p>
                 </div>
-                <button className="btn cta-btn" onClick={submit}>Analyze Resume →</button>
+                <button className="btn cta-btn" onClick={submit}>Analyze Resume</button>
               </>
             ) : (
               <div className="builder-wizard fade-in">
@@ -301,7 +339,7 @@ export default function App() {
                             Parsing...
                           </>
                         ) : (
-                          "⚡ Pre-fill from old Resume"
+                          "Autofill from existing Resume PDF"
                         )}
                         <input type="file" accept=".pdf" hidden onChange={handlePreFill} disabled={parsing} />
                       </label>
@@ -393,9 +431,9 @@ export default function App() {
                 <div className="wizard-nav" style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
                   {formStep > 1 && <button className="btn reset" style={{ flex: 1 }} onClick={() => setFormStep(formStep - 1)}>Back</button>}
                   {formStep < 5 ? (
-                    <button className="btn cta-btn" style={{ flex: 2 }} onClick={() => setFormStep(formStep + 1)}>Next Step →</button>
+                    <button className="btn cta-btn" style={{ flex: 2 }} onClick={() => setFormStep(formStep + 1)}>Next Step</button>
                   ) : (
-                    <button className="btn cta-btn" style={{ flex: 2 }} onClick={generate}>✨ Generate Professional Resume →</button>
+                    <button className="btn cta-btn" style={{ flex: 2 }} onClick={generate}>Generate Professional Resume</button>
                   )}
                 </div>
               </div>
@@ -405,26 +443,73 @@ export default function App() {
 
         {/* ====== LOADING ====== */}
         {loading && (
-          <div className="loading-box fade-in">
-            <div className="progress-steps">
-              {STEPS.map((s, i) => (
-                <div key={i} className={`p-step ${i < step ? "done" : ""} ${i === step ? "active" : ""}`}>
-                  <div className="p-dot">{i < step ? "✓" : s.icon}</div>
-                  <span className="p-step-label">{s.label}</span>
-                </div>
-              ))}
+          <div className="loading-box fade-in" style={{ textAlign: "center" }}>
+            <style>{`
+              .circular-loader {
+                position: relative;
+                width: 120px;
+                height: 120px;
+                margin: 0 auto 30px;
+              }
+              .loader-ring {
+                position: absolute;
+                inset: 0;
+                border-radius: 50%;
+                border: 4px solid rgba(255,255,255,0.05);
+                border-top-color: var(--accent);
+                border-left-color: var(--accent-bright);
+                animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+              }
+              .loader-core {
+                position: absolute;
+                inset: 12px;
+                background: rgba(255,255,255,0.03);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 32px;
+                backdrop-filter: blur(8px);
+                border: 1px solid var(--border-subtle);
+                box-shadow: inset 0 0 20px rgba(255,255,255,0.02);
+              }
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+              .loading-text {
+                font-family: "Outfit", sans-serif;
+                font-size: 18px;
+                font-weight: 500;
+                background: linear-gradient(to right, #fff, var(--text-secondary));
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                animation: pulse 2s infinite;
+              }
+              @keyframes pulse {
+                0%, 100% { opacity: 0.7; }
+                50% { opacity: 1; }
+              }
+            `}</style>
+            <div className="circular-loader">
+              <div className="loader-ring"></div>
+              <div className="loader-core">
+                {mode === "analyze" ? "🔍" : "🏗️"}
+              </div>
             </div>
-            <div className="progress-bar-track">
-              <div className="progress-bar-fill" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
-            </div>
-            <p className="loading-text">Analyzing your resume…</p>
+            <p className="loading-text">
+              {mode === "analyze"
+                ? "AI Auditor is reviewing your career history..."
+                : "AI Architect is engineering your final resume..."}
+            </p>
           </div>
         )}
 
         {/* ====== RESULTS ====== */}
         {data && mode === "analyze" && (
           <div className="results dashboard-grid">
-            
+
             {/* Left Column (Overview) */}
             <div className="dashboard-left">
               <div className="hero fade-in stagger-1">
@@ -460,13 +545,13 @@ export default function App() {
                 )}
 
                 {data.summary && <p className="summary">{data.summary}</p>}
-                
+
                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                  <button className="btn reset fade-in stagger-9" style={{ flex: 1, marginTop: 0 }} onClick={() => { setData(null); setScore(0); setCopied(false); }}>
-                    ← Start Over
+                  <button className="btn reset fade-in stagger-9" style={{ flex: 1, marginTop: 0 }} onClick={resetApp}>
+                    🏠 Home
                   </button>
                   <button className="btn cta-btn fade-in stagger-9" style={{ flex: 1, marginTop: 0 }} onClick={() => window.print()}>
-                    📄 Save PDF
+                    📄 Save Report
                   </button>
                 </div>
               </div>
@@ -474,17 +559,17 @@ export default function App() {
 
             {/* Right Column (Details) */}
             <div className="dashboard-right">
-              
+
               <div className="tabs-nav fade-in stagger-2">
-                <button 
+                <button
                   className={`tab-btn ${activeTab === "action" ? "active" : ""}`}
                   onClick={() => setActiveTab("action")}
                 >🚀 Action Plan</button>
-                <button 
+                <button
                   className={`tab-btn ${activeTab === "keywords" ? "active" : ""}`}
                   onClick={() => setActiveTab("keywords")}
                 >🔍 Keyword Matcher</button>
-                <button 
+                <button
                   className={`tab-btn ${activeTab === "review" ? "active" : ""}`}
                   onClick={() => setActiveTab("review")}
                 >📋 Deep Review</button>
@@ -529,10 +614,10 @@ export default function App() {
                       <span><span className="dot good" />Matched</span>
                       <span><span className="dot missing" />Missing</span>
                     </div>
-                    
+
                     <h4 style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "16px", marginBottom: "8px" }}>Missing from your resume:</h4>
                     <div className="skills missing">
-                      {Array.isArray(data.missing_keywords) && data.missing_keywords.length > 0 
+                      {Array.isArray(data.missing_keywords) && data.missing_keywords.length > 0
                         ? data.missing_keywords.map((k, i) => <span key={i}>{k}</span>)
                         : <span style={{ background: "transparent", border: "none", padding: 0 }}>None</span>}
                     </div>
@@ -642,13 +727,14 @@ export default function App() {
             <div className="generated-result fade-in" style={{ textAlign: "center" }}>
               <h2 className="gradient-text" style={{ fontSize: "32px", marginBottom: "16px" }}>Resume Generated Successfully! ✨</h2>
               <p className="hero-sub" style={{ marginBottom: "32px" }}>Your professional resume is ready to download.</p>
-              
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', maxWidth: "500px", margin: "0 auto" }}>
-                <button className="btn reset" onClick={() => setData(null)}>← Edit Info</button>
-                <button className="btn cta-btn" onClick={() => window.print()}>📄 Download PDF Resume</button>
+
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', maxWidth: "600px", margin: "0 auto" }}>
+                <button className="btn reset" style={{ flex: 1 }} onClick={() => setData(null)}>← Edit Info</button>
+                <button className="btn cta-btn" style={{ flex: 1 }} onClick={() => window.print()}>📄 Download PDF</button>
+                <button className="btn reset" style={{ flex: 1, background: "rgba(255,255,255,0.05)" }} onClick={resetApp}>🏠 Main Menu</button>
               </div>
             </div>
-            
+
             {/* The actual printable template (hidden via CSS until printed) */}
             <div className="resume-template printing">
               <table>
@@ -659,86 +745,86 @@ export default function App() {
                   <tr>
                     <td>
                       <div className="resume-header">
-                <h1>{name || "Your Name"}</h1>
-                <div className="contact-line">
-                  {contact && <span>{contact}</span>}
-                  {phone && <span> | {phone}</span>}
-                  {location && <span> | {location}</span>}
-                </div>
-                <div className="contact-line">
-                  {linkedin && <span>LinkedIn: {linkedin}</span>}
-                  {website && <span> | Portfolio: {website}</span>}
-                </div>
-              </div>
-              
-              {data.summary && (
-                <div className="resume-section">
-                  <h2>Professional Summary</h2>
-                  <p>{data.summary}</p>
-                </div>
-              )}
-
-              {data.experience && data.experience.length > 0 && (
-                <div className="resume-section">
-                  <h2>Professional Experience</h2>
-                  {data.experience.map((exp, i) => (
-                    <div className="job" key={i}>
-                      <div className="job-header">
-                        <span className="job-title">{exp.title} | {exp.company}</span>
-                        <span className="job-dates">{exp.dates}</span>
+                        <h1>{name || "Your Name"}</h1>
+                        <div className="contact-line">
+                          {contact && <span>{contact}</span>}
+                          {phone && <span> | {phone}</span>}
+                          {location && <span> | {location}</span>}
+                        </div>
+                        <div className="contact-line">
+                          {linkedin && <span>LinkedIn: {linkedin}</span>}
+                          {website && <span> | Portfolio: {website}</span>}
+                        </div>
                       </div>
-                      {exp.bullets && exp.bullets.length > 0 && (
-                        <ul>
-                          {exp.bullets.map((b, j) => <li key={j}>{b}</li>)}
-                        </ul>
+
+                      {data.summary && (
+                        <div className="resume-section">
+                          <h2>Professional Summary</h2>
+                          <p>{data.summary}</p>
+                        </div>
                       )}
-                    </div>
-                  ))}
-                </div>
-              )}
 
-              {data.projects && data.projects.length > 0 && (
-                <div className="resume-section">
-                  <h2>Key Projects</h2>
-                  {data.projects.map((proj, i) => (
-                    <div className="job" key={i}>
-                      <div className="job-header">
-                        <span className="job-title">{proj.name}</span>
-                        <span className="job-dates" style={{ fontStyle: 'italic', fontWeight: 400 }}>{proj.tech}</span>
-                      </div>
-                      {proj.bullets && proj.bullets.length > 0 && (
-                        <ul>
-                          {proj.bullets.map((b, j) => <li key={j}>{b}</li>)}
-                        </ul>
+                      {data.experience && data.experience.length > 0 && (
+                        <div className="resume-section">
+                          <h2>Professional Experience</h2>
+                          {data.experience.map((exp, i) => (
+                            <div className="job" key={i}>
+                              <div className="job-header">
+                                <span className="job-title">{exp.title} | {exp.company}</span>
+                                <span className="job-dates">{exp.dates}</span>
+                              </div>
+                              {exp.bullets && exp.bullets.length > 0 && (
+                                <ul>
+                                  {exp.bullets.map((b, j) => <li key={j}>{b}</li>)}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       )}
-                    </div>
-                  ))}
-                </div>
-              )}
 
-              {data.education && data.education.length > 0 && (
-                <div className="resume-section">
-                  <h2>Education</h2>
-                  {data.education.map((edu, i) => (
-                    <div className="job" key={i}>
-                      <div className="job-header">
-                        <span className="job-title">{edu.degree} - {edu.school}</span>
-                        <span className="job-dates">{edu.dates}</span>
-                      </div>
-                      {edu.details && <p style={{ fontSize: '10pt', marginTop: '2px', fontStyle: 'italic' }}>{edu.details}</p>}
-                    </div>
-                  ))}
-                </div>
-              )}
+                      {data.projects && data.projects.length > 0 && (
+                        <div className="resume-section">
+                          <h2>Key Projects</h2>
+                          {data.projects.map((proj, i) => (
+                            <div className="job" key={i}>
+                              <div className="job-header">
+                                <span className="job-title">{proj.name}</span>
+                                <span className="job-dates" style={{ fontStyle: 'italic', fontWeight: 400 }}>{proj.tech}</span>
+                              </div>
+                              {proj.bullets && proj.bullets.length > 0 && (
+                                <ul>
+                                  {proj.bullets.map((b, j) => <li key={j}>{b}</li>)}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
-              {data.skills && data.skills.length > 0 && (
-                <div className="resume-section">
-                  <h2>Skills & Expertise</h2>
-                  <div className="skills-list">
-                    {data.skills.join(" • ")}
-                  </div>
-                </div>
-              )}
+                      {data.education && data.education.length > 0 && (
+                        <div className="resume-section">
+                          <h2>Education</h2>
+                          {data.education.map((edu, i) => (
+                            <div className="job" key={i}>
+                              <div className="job-header">
+                                <span className="job-title">{edu.degree} - {edu.school}</span>
+                                <span className="job-dates">{edu.dates}</span>
+                              </div>
+                              {edu.details && <p style={{ fontSize: '10pt', marginTop: '2px', fontStyle: 'italic' }}>{edu.details}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                        <div className="resume-section">
+                          <h2>Skills & Expertise</h2>
+                          <div className="skills-list">
+                            {data.skills.map((s, i) => (
+                              <div key={i} className="skill-item">{s}</div>
+                            ))}
+                          </div>
+                        </div>
                     </td>
                   </tr>
                 </tbody>

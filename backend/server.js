@@ -33,63 +33,35 @@ function buildPrompt(resumeText, role, jobDescription) {
 
   return `You are an elite Executive Recruiter and Career Coach with 20+ years of experience placing candidates at top-tier companies like Google, Meta, and high-growth startups. Your goal is to provide a comprehensive, supportive, yet highly objective analysis of this resume.
 
-TARGET ROLE: "${role || "Not specified — infer the best-fit role from the resume content"}"${jdSection}
+TARGET: "${role || "Infer from content"}"${jdSection}
 
-ANALYSIS INSTRUCTIONS:
-Analyze the resume below as an independent, unbiased industry expert. Your feedback must be brutally honest and objective, following universal ATS (Applicant Tracking System) and Fortune 500 recruitment standards.
+DIRECTIVES:
+1. SCORE AS GATEKEEPER: Be brutally objective. achieve 90+ only for elite, metric-heavy resumes.
+2. 6-SECOND RULE: Weigh Professional Summary + first 2 roles (60% weight).
+3. QUANTIFIED IMPACT: Strictly penalize bullets without metrics (%, $, #).
+4. JD ALIGNMENT: Penalize missing core keywords if JD is provided.
+5. FORMAT: Return ONLY valid JSON.
 
-SCORING PHILOSOPHY (STRICT INDEPENDENCE):
-- THE 6-SECOND SCAN: Weigh the Professional Summary and the first 2 Job Entries most heavily (60% of score). If the value prop isn't clear here, the resume fails.
-- QUANTIFIED IMPACT: Penalize any bullet point that lacks numbers, percentages, or scale. This is the #1 reason for a low score.
-- KEYWORD ALIGNMENT: Strictly penalize if the resume does not naturally weave in the core requirements from the Job Description (if provided).
-- ACTION-DRIVEN: Reward only elite power verbs (Spearheaded, Orchestrated). Penalize passive voice.
-- OBJECTIVE BENCHMARK: A score of 90+ is extremely difficult to achieve. Be the gatekeeper.
+JSON SCHEMA:
+{
+  "ats_score": 0-100,
+  "score": 0-100,
+  "detected_role": "Title",
+  "level": "Entry-Executive",
+  "summary": "2-3 sentence overview + #1 critical fix",
+  "top_fixes": ["Action+Context+Reason", "...", "..."],
+  "breakdown": {"clarity": 0-100, "impact": 0-100, "skills": 0-100, "structure": 0-100},
+  "skills": ["Tool1", "..."],
+  "matched_keywords": ["KW1", "..."],
+  "missing_keywords": ["KW1", "..."],
+  "good": ["Highlight1", "..."],
+  "improve": ["Fix1", "..."],
+  "missing": ["Section1", "..."],
+  "rewrite": "30-60 word copy-paste Summary"
+}
 
-SCORING RUBRICS:
-
-1. "ats_score" (0-100): ATS readability and keyword alignment.
-   - 90-100: Perfect structure, zero parsing errors, high keyword density.
-   - 70-89: Strong keywords but layout could be cleaner.
-   - Below 70: Formatting roadblocks or critical keyword gaps.
-
-2. "score" (0-100): Human recruiter appeal.
-   - 90-100: Exceptional; clear "buy" signal. Results-driven, powerful narrative.
-   - 70-89: Solid professional profile; needs minor polishing of impact statements.
-   - Below 70: Lacks quantifiable achievements or clear career progression.
-
-3. "breakdown" (0-100):
-   - "clarity": Scanability and conciseness.
-   - "impact": The use of "Action-Verb + Result + Metric" formula.
-   - "skills": Breadth and relevance of the technical/professional toolkit.
-   - "structure": Logical flow and professional layout.
-
-4. "summary" (2-3 sentences): A supportive overview of the candidate's standing. Start with their biggest strength, then state the single most important thing they need to change to land an interview.
-
-5. "detected_role": The most accurate professional title for this profile.
-
-6. "level": Career stage (Entry-Level to Executive).
-
-7. "top_fixes" (exactly 3 items): The "Game Changers". These should be the 3 highest-priority improvements. Use the format: "[Action] + [Context] + [Reason]". Example: "Add a 'Core Competencies' section near the top to ensure the ATS immediately flags your Cloud Architecture skills."
-
-8. "skills" (array): Clean names of detected tools and technologies (max 10 items).
-
-9. "matched_keywords": Role-relevant skills found in the resume (max 10 items).
-
-10. "missing_keywords": High-value keywords for the target role that are currently missing (max 10 items).
-
-11. "good" (3-5 items): Specific highlights from the resume that prove value. Example: "Excellent use of the X-Y-Z formula in your 'Senior Developer' role."
-
-12. "improve" (3-5 items): Specific, actionable suggestions to elevate existing content.
-
-13. "missing" (2-4 items): Entirely missing sections or critical data points.
-
-14. "rewrite" (30-60 words): A high-impact, modern "Professional Profile" summary that the candidate can copy-paste to the top of their resume. Focus on achievements and unique value.
-
-RESPONSE FORMAT: Return ONLY valid JSON. No markdown, no fences.
-{"ats_score","matched_keywords","score","summary","detected_role","level","top_fixes","skills","missing_keywords","breakdown":{"clarity","impact","skills","structure"},"good","improve","missing","rewrite"}
-
-RESUME TEXT:
-${resumeText}`;
+RESUME:
+${resumeText}t}`;
 }
 
 /* ---------- PARSE AI RESPONSE ---------- */
@@ -220,45 +192,29 @@ function buildGeneratorPrompt(formData) {
   
   const hasExperience = experiences && experiences.length > 0 && experiences[0].company;
 
-  return `You are an elite, FAANG-level Executive Resume Writer and Industry Expert. Your mission is to take the user's raw input and engineer a top 1% resume that reflects deep industry understanding and a clear career narrative.
+  return `You are a FAANG-level Executive Resume Architect. Engineer a 90+ ATS resume from the data below.
 
-${!hasExperience ? "CRITICAL: The candidate is a student/entry-level. You must transform their academic work into professional-grade 'Experience' and highlight their fast learning and technical foundation." : ""}
+${!hasExperience ? "STRICT: Transform academic work into professional 'Experience'." : ""}
 
-USER DATA:
-- Name: ${name}
-- Contact: ${email} | ${phone} | ${location} | ${linkedin} | ${website || ""}
-- Target JD: ${jobDescription || "Not provided"}
+DATA:
+- Name: ${name} | Contact: ${email}, ${phone}, ${location} | Social: ${linkedin}, ${website}
+- Target JD: ${jobDescription || "General Professional"}
+- EXP: ${experiences.map(e => `${e.title} @ ${e.company} (${e.dates}): ${e.description}`).join('\n')}
+- PROJ: ${projects.map(p => `${p.name} (${p.tech}): ${p.description}`).join('\n')}
+- EDU: ${educations.map(e => `${e.degree} @ ${e.school} (${e.dates}): ${e.description}`).join('\n')}
+- SKILLS: ${skills}
 
-EXPERIENCE:
-${experiences.map(e => `- ${e.title} at ${e.company} (${e.dates}): ${e.description}`).join('\n')}
+DIRECTIVES:
+1. SECTOR PROTOCOL: FINANCE (Risk/Scale), TECH (Stack/Innovation), HEALTH (Outcomes).
+2. SUMMARY: 3 sentences [Identity] -> [Value Prop] -> [Top 3 Skills].
+3. EXP BULLETS: Exactly 5-6 bullets/role. Use 'High-Command' verbs (Orchestrated, Mitigated, Spearheaded, Optimized).
+4. METRIC DISCIPLINE: Exactly 2-3 bullets per role MUST have metrics (%, $, #). The remaining 3 bullets MUST be purely qualitative/descriptive to ensure authenticity.
+5. PROMOTIONS: Separate titles at 1 company to show upward mobility.
+6. ATOMIC SKILLS: Array of individual tools (8-10 items). No grouping.
+7. GROUNDING: Stay 100% true to data. Elevate tone, don't invent facts.
 
-PROJECTS:
-${projects.map(p => `- ${p.name} (${p.tech}): ${p.description}`).join('\n')}
-
-EDUCATION:
-${educations.map(e => `- ${e.degree} from ${e.school} (${e.dates}): ${e.description || ""}`).join('\n')}
-
-ADDITIONAL INFO:
-${skills}
-
-PHASE 1: DEEP UNDERSTANDING
-- Analyze the Industry: Determine if this is Tech, Finance, Healthcare, or Student life. 
-- Understand the Trajectory: Look at the dates and titles. Is this a career transition? A promotion path? Or an entry-level start?
-- Adjust the Tone: Match the professional standards of the industry (e.g., precise and metric-heavy for Tech/Finance, academic and skill-focused for Students).
-
-PHASE 2: ELITE OUTPUT GENERATION (TARGET SCORE: 95+)
-1. STRICT GROUNDING: Use ONLY the data provided. Never invent facts.
-1. THE "HOOK" SUMMARY (STRICT): Exactly 3 sentences: [Sentence 1: Identity + years of exp] -> [Sentence 2: Major value prop/track record] -> [Sentence 3: Top 3 core competencies].
-2. ACTION-METHOD-IMPACT (AMI) FORMULA: Every bullet MUST follow: [Action Verb] -> [Method] -> [Result].
-3. QUANTIFIED IMPACT (70% Rule): You MUST quantify 70% of bullets using %, $, #, or scale.
-4. BULLET CAP (EXTREME CONSTRAINT): Limit each job experience to exactly 4-6 HIGH-IMPACT bullets max. Any output with more than 6 bullets per role is a failure. Prioritize quality over quantity. 
-5. SPACE MANAGEMENT: Target a perfectly full single-page layout. If 2 pages, ensure the 2nd page is at least 50% full.
-6. CURATED SKILLS (STRICT CATEGORIZATION): Return exactly 8-10 skills total. YOU MUST prefix every skill with a category in CAPS. Example: 'STRATEGY: Risk Management' or 'TOOLS: Microsoft Excel'. This prevents a "wall of text" and looks elite.
-7. SECTION HIERARCHY: Summary -> Experience -> Projects -> Education -> Skills.
-8. ATS KEYWORD WEAVING: Naturally integrate top skills from the JD into bullet points.
-
-RESPONSE FORMAT: Return ONLY valid JSON.
-{"summary":"...","experience":[{"title":"...","company":"...","dates":"...","bullets":["..."]}],"education":[{"degree":"...","school":"...","dates":"...","details":"..."}],"projects":[{"name":"...","tech":"...","bullets":["..."]}],"skills":["..."]}
+FORMAT: Return ONLY valid JSON.
+{"summary":"","experience":[{"title":"","company":"","dates":"","bullets":[]}],"education":[{"degree":"","school":"","dates":"","details":""}],"projects":[{"name":"","tech":"","bullets":[]}],"skills":[]}
 `;
 }
 
@@ -271,31 +227,26 @@ async function generateResume(formData) {
 
 /* ---------- PARSER PROMPT (Pre-fill) ---------- */
 function buildParsePrompt(resumeText) {
-  return `You are a high-speed data extraction engine. Extract the following information from the resume text into the EXACT JSON format specified.
+  return `You are a high-speed data extraction engine. Extract into EXACT JSON format.
 
-RESUME TEXT:
+RESUME:
 ${resumeText}
 
-STRICT JSON FORMAT:
+SCHEMA:
 {
-  "name": "...",
-  "email": "...",
-  "phone": "...",
-  "location": "...",
-  "linkedin": "...",
-  "website": "...",
-  "experiences": [{"company": "...", "title": "...", "dates": "...", "description": "..."}],
-  "educations": [{"school": "...", "degree": "...", "dates": "...", "description": "..."}],
-  "projects": [{"name": "...", "tech": "...", "description": "..."}],
-  "skills": "list of skills as a single string"
+  "name": "", "email": "", "phone": "", "location": "", "linkedin": "", "website": "",
+  "experiences": [{"company": "", "title": "", "dates": "", "description": ""}],
+  "educations": [{"school": "", "degree": "", "dates": "", "description": ""}],
+  "projects": [{"name": "", "tech": "", "description": ""}],
+  "skills": "atomic list"
 }
 
-INSTRUCTIONS:
-- PROMOTIONS & MULTIPLE ROLES (CRITICAL): If the candidate has held multiple titles at the same company (e.g. 'Senior Manager' then 'Director'), YOU MUST extract each title as a SEPARATE entry in the 'experience' array. Do not group them into one.
-- LINGUISTIC CLEANUP: Strip away messy bullet characters, fix broken capitalization, and normalize date formats.
-- CONTEXTUAL INTELLIGENCE: Understand the career narrative. Identify high-value projects even if buried.
-- SKILL SYNTHESIS: Extract technical tools AND leadership competencies.
-- Return ONLY valid JSON. No conversational filler.`;
+DIRECTIVES:
+1. NESTED ROLES: Split multiple titles/promotions at 1 company into distinct 'experiences' entries.
+2. DATA EXHAUSTION: Extract all metrics, tools, and project details.
+3. ATOMIC SKILLS: Extract as individual strings.
+4. LINGUISTIC: Normalize dates ('Month Year - Month Year'), fix case, strip bullets.
+5. Return ONLY JSON.`;
 }
 
 async function parseResumeToForm(resumeText) {

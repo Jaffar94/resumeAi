@@ -994,11 +994,11 @@ h1, h2, h3 {
   font-size: 13pt;
   font-weight: 700;
   color: #000 !important;
-  border-bottom: 1.5px solid #000;
-  padding-bottom: 3px;
-  margin-bottom: 12px;
+  border-bottom: 1px solid #000; /* Thinner line for "neat" look */
+  padding-bottom: 2px;
+  margin-bottom: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px; /* Slightly wider for professional feel */
 }
 
 .hidden-screen {
@@ -1070,7 +1070,7 @@ h1, h2, h3 {
 
   .resume-section {
     margin-bottom: 24px;
-    page-break-inside: avoid;
+    /* page-break-inside: auto; */
   }
 
   .resume-section h2 {

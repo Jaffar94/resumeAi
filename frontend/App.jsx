@@ -639,7 +639,14 @@ export default function App() {
             
             {/* The actual printable template (hidden via CSS until printed) */}
             <div className="resume-template printing">
-              <div className="resume-header">
+              <table>
+                <thead>
+                  <tr><td><div className="print-margin-top"></div></td></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div className="resume-header">
                 <h1>{name || "Your Name"}</h1>
                 <div className="contact-line">
                   {contact && <span>{contact}</span>}
@@ -720,6 +727,13 @@ export default function App() {
                   </div>
                 </div>
               )}
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr><td><div className="print-margin-bottom"></div></td></tr>
+                </tfoot>
+              </table>
             </div>
           </>
         )}

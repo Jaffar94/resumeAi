@@ -239,7 +239,7 @@ CORE INSTRUCTIONS FOR ELITE OUTPUT:
 3. X-Y-Z FORMULA: Rewrite experience bullets using: "Accomplished [X] as measured by [Y], by doing [Z]". Sharpen the language, but do not invent fake metrics.
 4. PROFESSIONAL SUMMARY: Write a 3-sentence profile based strictly on the provided facts. Align their existing strengths with the Target JD.
 5. PROJECTS & EDUCATION: Transform descriptions into professional entries. Extract honors/coursework from the education notes.
-6. SORTING: Sort experience and education in reverse chronological order (newest first).
+6. SORTING: Sort experience and education in reverse chronological order. Entries with "Present", "Current", or the most recent year MUST come first. Apply this to the final JSON arrays.
 
 RESPONSE FORMAT: Return ONLY valid JSON.
 {"summary":"...","experience":[{"title":"...","company":"...","dates":"...","bullets":["..."]}],"education":[{"degree":"...","school":"...","dates":"...","details":"..."}],"projects":[{"name":"...","tech":"...","bullets":["..."]}],"skills":["..."]}

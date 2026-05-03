@@ -63,11 +63,11 @@ SCORING RUBRICS:
 
 7. "top_fixes" (exactly 3 items): The "Game Changers". These should be the 3 highest-priority improvements. Use the format: "[Action] + [Context] + [Reason]". Example: "Add a 'Core Competencies' section near the top to ensure the ATS immediately flags your Cloud Architecture skills."
 
-8. "skills" (array): Clean names of detected tools and technologies.
+8. "skills" (array): Clean names of detected tools and technologies (max 10 items).
 
-9. "matched_keywords": Role-relevant skills found in the resume.
+9. "matched_keywords": Role-relevant skills found in the resume (max 10 items).
 
-10. "missing_keywords": High-value keywords for the target role that are currently missing.
+10. "missing_keywords": High-value keywords for the target role that are currently missing (max 10 items).
 
 11. "good" (3-5 items): Specific highlights from the resume that prove value. Example: "Excellent use of the X-Y-Z formula in your 'Senior Developer' role."
 
@@ -100,14 +100,14 @@ function parseResponse(text) {
 function sanitize(parsed) {
   return {
     ats_score: parsed.ats_score ?? 0,
-    matched_keywords: parsed.matched_keywords ?? [],
+    matched_keywords: (parsed.matched_keywords ?? []).slice(0, 10),
     score: parsed.score ?? 0,
     summary: cleanText(parsed.summary ?? ""),
     detected_role: parsed.detected_role ?? "Unknown",
     level: parsed.level ?? "Intermediate",
     top_fixes: (parsed.top_fixes || []).map(cleanText),
-    skills: parsed.skills ?? [],
-    missing_keywords: parsed.missing_keywords ?? [],
+    skills: (parsed.skills ?? []).slice(0, 10),
+    missing_keywords: (parsed.missing_keywords ?? []).slice(0, 10),
     breakdown: {
       clarity: parsed.breakdown?.clarity ?? 0,
       impact: parsed.breakdown?.impact ?? 0,
@@ -207,39 +207,78 @@ async function analyzeResume(resumeText, role, jobDescription) {
 }
 
 /* ---------- GENERATOR PROMPT ---------- */
-function buildGeneratorPrompt(name, contact, jobDescription, brainDump) {
-  return `You are an elite, FAANG-level Executive Resume Writer. Your task is to take the user's messy brain-dump and craft a premium, highly ATS-optimized, top-tier professional resume.
+function buildGeneratorPrompt(formData) {
+  const { name, email, phone, location, linkedin, website, jobDescription, experiences, educations, skills } = formData;
+  
+  const hasExperience = experiences && experiences.length > 0 && experiences[0].company;
 
-USER INFO:
-Name: ${name}
-Contact: ${contact}
+  return `You are an elite, FAANG-level Executive Resume Writer. Your task is to take the user's structured data and craft a premium, high-impact professional resume.
 
-TARGET JOB DESCRIPTION:
-${jobDescription || "None provided"}
+${!hasExperience ? "CRITICAL: The candidate is a student or entry-level with no formal job experience. You must focus heavily on their academic projects, technical skills, and educational background to prove their potential." : ""}
 
-USER'S MESSY NOTES / BRAIN DUMP:
-${brainDump}
+USER DATA:
+- Name: ${name}
+- Contact: ${email} | ${phone} | ${location} | ${linkedin} | ${website || ""}
+- Target JD: ${jobDescription || "Not provided"}
+
+EXPERIENCE/INTERNSHIPS:
+${experiences.map(e => `- ${e.title} at ${e.company} (${e.dates}): ${e.description}`).join('\n')}
+
+EDUCATION:
+${educations.map(e => `- ${e.degree} from ${e.school} (${e.dates}): ${e.description || ""}`).join('\n')}
+
+SKILLS/PROJECTS/NOTES:
+${skills}
 
 STRICT INSTRUCTIONS:
-1. "summary" (40-60 words): Write an authoritative, high-impact professional summary. Highlight key strengths, years of experience (inferred from dates), and align perfectly with the target JD. Use strong adjectives. DO NOT hallucinate facts.
-2. "experience" (array of objects): Extract ONLY past jobs explicitly mentioned. DO NOT invent companies or roles. For each job:
-   - "title": Cleaned up, professional job title.
-   - "company": Company name explicitly stated.
-   - "dates": Best guess at dates.
-   - "bullets" (array of strings): Generate 3-5 phenomenal bullet points using the XYZ formula. You MUST infer professional metrics ONLY for responsibilities actually mentioned. Use extremely strong action verbs. DO NOT use bullet characters or emojis.
-3. "education" (array of objects): Extract ONLY education explicitly mentioned. DO NOT invent schools (like Stanford) or degrees. If no education is mentioned, return an empty array.
-4. "skills" (array of strings): Extract ALL hard skills, tools, and languages explicitly mentioned. Then infer additional highly relevant professional skills to ensure a list of 10-15 elite skills tailored to the JD.
+1. "summary": Write a powerful 2-3 sentence profile. Use only the user's provided experience and skills.
+2. "experience": For each entry, generate 3-5 high-impact bullet points using the X-Y-Z formula. SORT all experience entries in reverse chronological order (newest first).
+3. "projects": ONLY extract projects explicitly mentioned. If no projects are mentioned, return an empty array [].
+4. "education": For each entry, provide "school", "degree", "dates", and a "details" field. Use the education description to extract 2-3 key honors, coursework, or activities. SORT entries newest first.
+5. "skills": Generate a curated list of 12-15 professional skills tailored to the Target JD.
 
-RESPONSE FORMAT: Return ONLY valid JSON with no markdown formatting.
-{"summary":"...","experience":[{"title":"...","company":"...","dates":"...","bullets":["..."]}],"education":[{"degree":"...","school":"...","year":"..."}],"skills":["..."]}
+RESPONSE FORMAT: Return ONLY valid JSON with no markdown.
+{"summary":"...","experience":[{"title":"...","company":"...","dates":"...","bullets":["..."]}],"education":[{"degree":"...","school":"...","dates":"...","details":"..."}],"projects":[{"name":"...","tech":"...","bullets":["..."]}],"skills":["..."]}
 `;
 }
 
-async function generateResume(name, contact, jobDescription, brainDump) {
-  const prompt = buildGeneratorPrompt(name, contact, jobDescription, brainDump);
+async function generateResume(formData) {
+  const prompt = buildGeneratorPrompt(formData);
   const parsed = await callAIQueue(prompt);
   console.log("✅ FINAL GENERATE SUCCESS");
   return parsed;
+}
+
+/* ---------- PARSER PROMPT (Pre-fill) ---------- */
+function buildParsePrompt(resumeText) {
+  return `You are a high-speed data extraction engine. Extract the following information from the resume text into the EXACT JSON format specified.
+
+RESUME TEXT:
+${resumeText}
+
+STRICT JSON FORMAT:
+{
+  "name": "...",
+  "email": "...",
+  "phone": "...",
+  "location": "...",
+  "linkedin": "...",
+  "website": "...",
+  "experiences": [{"company": "...", "title": "...", "dates": "...", "description": "..."}],
+  "educations": [{"school": "...", "degree": "...", "dates": "...", "description": "..."}],
+  "projects": [{"name": "...", "tech": "...", "description": "..."}],
+  "skills": "list of skills as a single string"
+}
+
+INSTRUCTIONS:
+- If a field is missing, use "".
+- For 'experiences', summarize the responsibilities into the 'description' field.
+- Return ONLY the JSON. No markdown.`;
+}
+
+async function parseResumeToForm(resumeText) {
+  const prompt = buildParsePrompt(resumeText);
+  return await callAIQueue(prompt);
 }
 
 /* ---------- FALLBACK ---------- */
@@ -263,7 +302,7 @@ function fallback() {
     good: ["Basic structure present"],
     improve: ["Add measurable results to each bullet point"],
     missing: ["Projects section", "Professional summary"],
-    rewrite: "Experienced professional seeking to leverage skills and expertise in a challenging role.",
+    rewrite: "Dedicated professional looking for a challenging role in their field.",
   };
 }
 
@@ -296,17 +335,30 @@ app.post("/analyze", upload.single("resume"), async (req, res) => {
   }
 });
 
-/* ---------- GENERATE API ---------- */
+/* ---------- PARSE/PRE-FILL API ---------- */
+app.post("/parse", upload.single("resume"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  const filePath = req.file.path;
+  try {
+    const data = await fs.promises.readFile(filePath);
+    const pdfData = await pdf(data);
+    const text = pdfData.text;
+    const result = await parseResumeToForm(text);
+    return res.json(result);
+  } catch (err) {
+    console.error("❌ PARSE ERROR:", err.message);
+    return res.status(500).json({ error: "Failed to parse resume" });
+  } finally {
+    fs.unlink(filePath, () => { });
+  }
+});
+
+/* ---------- ANALYZE API ---------- */
 app.post("/generate", async (req, res) => {
   console.log("📥 /generate hit");
-  const { name, contact, jobDescription, brainDump } = req.body;
-
-  if (!brainDump) {
-    return res.status(400).json({ error: "Brain dump is required to generate a resume." });
-  }
-
+  
   try {
-    const result = await generateResume(name, contact, jobDescription, brainDump);
+    const result = await generateResume(req.body);
     return res.json(result);
   } catch (err) {
     console.error("❌ ERROR:", err.message);

@@ -28,6 +28,18 @@ export default function App() {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [brainDump, setBrainDump] = useState("");
+  
+  // New Structured Builder State
+  const [formStep, setFormStep] = useState(1);
+  const [experiences, setExperiences] = useState([{ company: "", title: "", dates: "", description: "" }]);
+  const [educations, setEducations] = useState([{ school: "", degree: "", dates: "", description: "" }]);
+  const [skills, setSkills] = useState("");
+  const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [website, setWebsite] = useState("");
+  const [projects, setProjects] = useState([{ name: "", tech: "", description: "" }]);
+  const [parsing, setParsing] = useState(false);
 
   /* --- loading step rotation --- */
   useEffect(() => {
@@ -70,8 +82,67 @@ export default function App() {
     if (f && f.type === "application/pdf") setFile(f);
   }, []);
 
-  // Use environment variable for production, default to localhost for development
+  // Use environment variable for production
   const API_URL = import.meta.env.VITE_API_URL;
+
+  /* --- builder helpers --- */
+  const addExperience = () => setExperiences([...experiences, { company: "", title: "", dates: "", description: "" }]);
+  const updateExperience = (i, field, val) => {
+    const newExp = [...experiences];
+    newExp[i][field] = val;
+    setExperiences(newExp);
+  };
+  const removeExperience = (i) => setExperiences(experiences.filter((_, idx) => idx !== i));
+
+  const addEducation = () => setEducations([...educations, { school: "", degree: "", dates: "", description: "" }]);
+  const updateEducation = (i, field, val) => {
+    const newEdu = [...educations];
+    newEdu[i][field] = val;
+    setEducations(newEdu);
+  };
+  const removeEducation = (i) => setEducations(educations.filter((_, idx) => idx !== i));
+
+  const addProject = () => setProjects([...projects, { name: "", tech: "", description: "" }]);
+  const updateProject = (i, field, val) => {
+    const newProj = [...projects];
+    newProj[i][field] = val;
+    setProjects(newProj);
+  };
+  const removeProject = (i) => setProjects(projects.filter((_, idx) => idx !== i));
+
+  /* --- pre-fill logic --- */
+  const handlePreFill = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setParsing(true);
+    setError("");
+    const fd = new FormData();
+    fd.append("resume", file);
+
+    try {
+      const res = await fetch(`${API_URL}/parse`, { method: "POST", body: fd });
+      const result = await res.json();
+      if (result.error) throw new Error(result.error);
+      
+      if (result.name) setName(result.name);
+      if (result.email) setContact(result.email);
+      if (result.phone) setPhone(result.phone);
+      if (result.location) setLocation(result.location);
+      if (result.linkedin) setLinkedin(result.linkedin);
+      if (result.website) setWebsite(result.website);
+      if (result.experiences && result.experiences.length > 0) setExperiences(result.experiences);
+      if (result.educations && result.educations.length > 0) setEducations(result.educations);
+      if (result.projects && result.projects.length > 0) setProjects(result.projects);
+      if (result.skills) setSkills(result.skills);
+      
+    } catch (err) {
+      console.error("❌ Pre-fill failed:", err);
+      setError("Failed to parse resume. You can still fill the form manually.");
+    } finally {
+      setParsing(false);
+    }
+  };
 
   /* --- submit --- */
   const submit = async () => {
@@ -106,29 +177,35 @@ export default function App() {
 
   /* --- generate --- */
   const generate = async () => {
-    if (!brainDump) {
-      setError("Please provide some experience notes (brain-dump) first.");
-      return;
-    }
     setLoading(true);
     setError("");
     setData(null);
     setStep(0);
     try {
+      const payload = {
+        name,
+        email: contact,
+        phone,
+        location,
+        linkedin,
+        website,
+        jobDescription,
+        experiences,
+        educations,
+        projects,
+        skills
+      };
       const res = await fetch(`${API_URL}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, contact, jobDescription, brainDump }),
+        body: JSON.stringify(payload)
       });
       const result = await res.json();
-      if (!result || typeof result !== "object" || result.error) {
-        setError(result?.error || "Invalid server response.");
-        return;
-      }
+      if (result.error) throw new Error(result.error);
       setData(result);
     } catch (err) {
-      console.error(err);
-      setError("Server error: " + err.message);
+      console.error("❌ ERROR:", err.message);
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -190,14 +267,118 @@ export default function App() {
                 <button className="btn cta-btn" onClick={submit}>Analyze Resume →</button>
               </>
             ) : (
-              <div className="builder-form fade-in" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                <div className="form-group">
-                  <input className="role-input" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
-                  <input className="role-input" placeholder="Contact Info (Email, Phone, LinkedIn)" value={contact} onChange={(e) => setContact(e.target.value)} />
+              <div className="builder-wizard fade-in">
+                {/* Step Indicator */}
+                <div className="wizard-steps">
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <div key={s} className={`w-step ${formStep >= s ? "active" : ""}`}>
+                      {s === 1 ? "👤" : s === 2 ? "💼" : s === 3 ? "🎓" : s === 4 ? "🚀" : "🛠️"}
+                    </div>
+                  ))}
                 </div>
-                <textarea className="jd-input" style={{ minHeight: "80px" }} placeholder="Target Job Description (optional)" value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} />
-                <textarea className="jd-input" style={{ minHeight: "150px" }} placeholder="Experience Brain Dump (Tell me about your past jobs, responsibilities, projects, education. Don't worry about formatting, just type it out!)" value={brainDump} onChange={(e) => setBrainDump(e.target.value)} />
-                <button className="btn cta-btn" onClick={generate}>✨ Generate Professional Resume →</button>
+
+                {/* STEP 1: Personal Info */}
+                {formStep === 1 && (
+                  <div className="form-section fade-in">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+                      <h3 style={{ margin: 0 }}>Contact Information</h3>
+                      <label className="prefill-btn">
+                        {parsing ? "Parsing..." : "⚡ Pre-fill from old Resume"}
+                        <input type="file" accept=".pdf" hidden onChange={handlePreFill} disabled={parsing} />
+                      </label>
+                    </div>
+                    <div className="form-grid">
+                      <input className="role-input" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
+                      <input className="role-input" placeholder="Email Address" value={contact} onChange={(e) => setContact(e.target.value)} />
+                      <input className="role-input" placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                      <input className="role-input" placeholder="Location (City, Country)" value={location} onChange={(e) => setLocation(e.target.value)} />
+                      <input className="role-input" placeholder="LinkedIn URL" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} />
+                      <input className="role-input" placeholder="Portfolio/Website URL" value={website} onChange={(e) => setWebsite(e.target.value)} />
+                    </div>
+                    <textarea className="jd-input" style={{ minHeight: "100px", marginTop: "12px" }} placeholder="Target Job Description (Optional - helps AI tailor your resume)" value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} />
+                  </div>
+                )}
+
+                {/* STEP 2: Experience */}
+                {formStep === 2 && (
+                  <div className="form-section fade-in">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <h3>Professional Experience</h3>
+                      <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addExperience}>+ Add Job</button>
+                    </div>
+                    {experiences.map((exp, i) => (
+                      <div key={i} className="form-card">
+                        <div className="form-grid">
+                          <input className="role-input" placeholder="Company" value={exp.company} onChange={(e) => updateExperience(i, "company", e.target.value)} />
+                          <input className="role-input" placeholder="Job Title" value={exp.title} onChange={(e) => updateExperience(i, "title", e.target.value)} />
+                          <input className="role-input" placeholder="Dates (e.g. 2021 - Present)" value={exp.dates} onChange={(e) => updateExperience(i, "dates", e.target.value)} />
+                        </div>
+                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="What did you do there? (Bullet points or a quick summary)" value={exp.description} onChange={(e) => updateExperience(i, "description", e.target.value)} />
+                        {experiences.length > 1 && <button className="remove-btn" onClick={() => removeExperience(i)}>Remove</button>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* STEP 3: Education */}
+                {formStep === 3 && (
+                  <div className="form-section fade-in">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <h3>Education</h3>
+                      <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addEducation}>+ Add Education</button>
+                    </div>
+                    {educations.map((edu, i) => (
+                      <div key={i} className="form-card">
+                        <div className="form-grid">
+                          <input className="role-input" placeholder="School/University" value={edu.school} onChange={(e) => updateEducation(i, "school", e.target.value)} />
+                          <input className="role-input" placeholder="Degree (e.g. B.S. in CS)" value={edu.degree} onChange={(e) => updateEducation(i, "degree", e.target.value)} />
+                          <input className="role-input" placeholder="Dates (e.g. 2020 - 2024)" value={edu.dates} onChange={(e) => updateEducation(i, "dates", e.target.value)} />
+                        </div>
+                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="Relevant coursework, honors, activities (e.g. Dean's List, Secretary of Robotics Club)..." value={edu.description} onChange={(e) => updateEducation(i, "description", e.target.value)} />
+                        {educations.length > 1 && <button className="remove-btn" onClick={() => removeEducation(i)}>Remove</button>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* STEP 4: Projects */}
+                {formStep === 4 && (
+                  <div className="form-section fade-in">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <h3>Key Projects</h3>
+                      <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addProject}>+ Add Project</button>
+                    </div>
+                    {projects.map((proj, i) => (
+                      <div key={i} className="form-card">
+                        <div className="form-grid">
+                          <input className="role-input" placeholder="Project Name" value={proj.name} onChange={(e) => updateProject(i, "name", e.target.value)} />
+                          <input className="role-input" placeholder="Tech Stack (e.g. React, Node, Python)" value={proj.tech} onChange={(e) => updateProject(i, "tech", e.target.value)} />
+                        </div>
+                        <textarea className="jd-input" style={{ minHeight: "80px", marginTop: "10px" }} placeholder="Describe the project and your key achievements..." value={proj.description} onChange={(e) => updateProject(i, "description", e.target.value)} />
+                        {projects.length > 1 && <button className="remove-btn" onClick={() => removeProject(i)}>Remove</button>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* STEP 5: Skills */}
+                {formStep === 5 && (
+                  <div className="form-section fade-in">
+                    <h3>Skills & Extras</h3>
+                    <p className="file-hint" style={{ marginBottom: "10px" }}>List your core skills, certifications, or any other notes you want the AI to include.</p>
+                    <textarea className="jd-input" style={{ minHeight: "200px" }} placeholder="e.g. React, Node.js, Project Management, AWS Certified..." value={skills} onChange={(e) => setSkills(e.target.value)} />
+                  </div>
+                )}
+
+                {/* Navigation */}
+                <div className="wizard-nav" style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                  {formStep > 1 && <button className="btn reset" style={{ flex: 1 }} onClick={() => setFormStep(formStep - 1)}>Back</button>}
+                  {formStep < 5 ? (
+                    <button className="btn cta-btn" style={{ flex: 2 }} onClick={() => setFormStep(formStep + 1)}>Next Step →</button>
+                  ) : (
+                    <button className="btn cta-btn" style={{ flex: 2 }} onClick={generate}>✨ Generate Professional Resume →</button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -451,19 +632,29 @@ export default function App() {
             
             {/* The actual printable template (hidden via CSS until printed) */}
             <div className="resume-template printing">
-              <h1>{name || "Your Name"}</h1>
-              <div className="contact-info">{contact || "contact@email.com"}</div>
+              <div className="resume-header">
+                <h1>{name || "Your Name"}</h1>
+                <div className="contact-line">
+                  {contact && <span>{contact}</span>}
+                  {phone && <span> | {phone}</span>}
+                  {location && <span> | {location}</span>}
+                </div>
+                <div className="contact-line">
+                  {linkedin && <span>LinkedIn: {linkedin}</span>}
+                  {website && <span> | Portfolio: {website}</span>}
+                </div>
+              </div>
               
               {data.summary && (
-                <>
+                <div className="resume-section">
                   <h2>Professional Summary</h2>
                   <p>{data.summary}</p>
-                </>
+                </div>
               )}
 
               {data.experience && data.experience.length > 0 && (
-                <>
-                  <h2>Experience</h2>
+                <div className="resume-section">
+                  <h2>Professional Experience</h2>
                   {data.experience.map((exp, i) => (
                     <div className="job" key={i}>
                       <div className="job-header">
@@ -477,30 +668,50 @@ export default function App() {
                       )}
                     </div>
                   ))}
-                </>
+                </div>
+              )}
+
+              {data.projects && data.projects.length > 0 && (
+                <div className="resume-section">
+                  <h2>Key Projects</h2>
+                  {data.projects.map((proj, i) => (
+                    <div className="job" key={i}>
+                      <div className="job-header">
+                        <span className="job-title">{proj.name}</span>
+                        <span className="job-dates" style={{ fontStyle: 'italic', fontWeight: 400 }}>{proj.tech}</span>
+                      </div>
+                      {proj.bullets && proj.bullets.length > 0 && (
+                        <ul>
+                          {proj.bullets.map((b, j) => <li key={j}>{b}</li>)}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
 
               {data.education && data.education.length > 0 && (
-                <>
+                <div className="resume-section">
                   <h2>Education</h2>
                   {data.education.map((edu, i) => (
                     <div className="job" key={i}>
                       <div className="job-header">
                         <span className="job-title">{edu.degree} - {edu.school}</span>
-                        <span className="job-dates">{edu.year}</span>
+                        <span className="job-dates">{edu.dates}</span>
                       </div>
+                      {edu.details && <p style={{ fontSize: '10pt', marginTop: '2px', fontStyle: 'italic' }}>{edu.details}</p>}
                     </div>
                   ))}
-                </>
+                </div>
               )}
 
               {data.skills && data.skills.length > 0 && (
-                <>
-                  <h2>Skills</h2>
+                <div className="resume-section">
+                  <h2>Skills & Expertise</h2>
                   <div className="skills-list">
                     {data.skills.join(" • ")}
                   </div>
-                </>
+                </div>
               )}
             </div>
           </>

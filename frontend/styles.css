@@ -971,27 +971,12 @@ h1, h2, h3 {
 @media print {
   @page {
     size: auto;
-    margin: 15mm; /* Hide default browser header/footer (date, URL, etc) */
-  }
-
-  /* Robust Print Isolation & Overflow Reset */
-  html, body, #root, .app, .glass, .generated-result {
-    display: block !important;
-    height: auto !important;
-    min-height: auto !important;
-    width: auto !important;
-    max-width: none !important;
-    overflow: visible !important;
-    position: static !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
-    background: white !important;
-    transform: none !important;
+    margin: 0; /* This officially kills the browser's header/footer */
   }
 
   body {
+    padding: 1.5cm !important; /* Add padding here so content doesn't touch edges */
+    background: white !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

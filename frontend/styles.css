@@ -1013,7 +1013,7 @@ h1, h2, h3 {
 @media print {
   @page {
     size: auto;
-    margin: 0; /* This officially kills the browser's header/footer */
+    margin: 1.2cm 1.5cm; /* True margins for EVERY page */
   }
 
   html, body {
@@ -1025,7 +1025,7 @@ h1, h2, h3 {
   }
 
   body {
-    padding: 1.5cm !important; /* This creates the professional document margin internally */
+    padding: 0 !important; /* Page margins are now handled by @page */
   }
 
   .hidden-screen, .tabs-nav, .btn, .copy-btn, .mode-toggle, .input-area, .generated-result, .dashboard-grid, .app::before, .app::after, .orb-3, .hero-main {
@@ -1069,6 +1069,7 @@ h1, h2, h3 {
   }
 
   .resume-section {
+    margin-top: 20px; /* Safety gap for page 2+ */
     margin-bottom: 24px;
     /* page-break-inside: auto; */
   }

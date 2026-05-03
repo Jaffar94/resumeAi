@@ -17,7 +17,8 @@ const upload = multer({ dest: "uploads/" });
 /* ---------- CLEAN TEXT ---------- */
 function cleanText(text = "") {
   return text
-    .replace(/[#*`]/g, "")
+    .replace(/[#*`]/g, "") // Remove markdown-like symbols
+    .replace(/[^\x20-\x7E\n]/g, "") // Keep only printable ASCII and newlines (strips weird symbols)
     .replace(/\n+/g, " ")
     .replace(/\s+/g, " ")
     .trim();

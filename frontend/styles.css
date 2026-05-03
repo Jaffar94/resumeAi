@@ -1040,19 +1040,29 @@ h1, h2, h3 {
     margin: 0; /* Officially kills the browser's header/footer */
   }
 
-  html, body {
+  html, body, .app, .glass {
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    background-image: none !important;
+    color: black !important;
+    -webkit-print-color-adjust: economy;
+    print-color-adjust: economy;
+  }
+
+  /* Kill all neon/glow effects and shadows for the printer */
+  * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
   }
 
   /* The magic margin-repeater hack */
   .print-margin-top { height: 1.5cm; }
   .print-margin-bottom { height: 1.5cm; }
 
-  table { width: 100%; border-collapse: collapse; }
+  table { width: 100%; border-collapse: collapse; background: white !important; }
   thead { display: table-header-group; }
   tfoot { display: table-footer-group; }
 
@@ -1062,11 +1072,8 @@ h1, h2, h3 {
 
   .hidden-screen, .tabs-nav, .btn, .copy-btn, .mode-toggle, .input-area, .generated-result, .dashboard-grid, .app::before, .app::after, .orb-1, .orb-2, .orb-3, .orb-4, .hero-main {
     display: none !important;
-  }
-  * {
-    color: black !important;
-    text-shadow: none !important;
-    box-shadow: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
   
   /* Show only the resume template on print if we are generating */

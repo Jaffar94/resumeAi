@@ -239,7 +239,8 @@ CORE INSTRUCTIONS FOR ELITE OUTPUT:
 3. X-Y-Z FORMULA: Rewrite experience bullets using: "Accomplished [X] as measured by [Y], by doing [Z]". Sharpen the language, but do not invent fake metrics.
 4. PROFESSIONAL SUMMARY: Write a 3-sentence profile based strictly on the provided facts. Align their existing strengths with the Target JD.
 5. PROJECTS & EDUCATION: Transform descriptions into professional entries. Extract honors/coursework from the education notes.
-6. SORTING: Sort experience and education in reverse chronological order. Entries with "Present", "Current", or the most recent year MUST come first. Apply this to the final JSON arrays.
+6. SORTING: Sort experience and education in reverse chronological order. Entries with "Present", "Current", or the most recent year MUST come first.
+7. CAREER PROGRESSION: If the user provides multiple roles at the same company, treat them as promotions. Ensure each role is distinct and highlights increasing responsibility. Apply this to the final JSON arrays.
 
 RESPONSE FORMAT: Return ONLY valid JSON.
 {"summary":"...","experience":[{"title":"...","company":"...","dates":"...","bullets":["..."]}],"education":[{"degree":"...","school":"...","dates":"...","details":"..."}],"projects":[{"name":"...","tech":"...","bullets":["..."]}],"skills":["..."]}
@@ -276,6 +277,7 @@ STRICT JSON FORMAT:
 
 INSTRUCTIONS:
 - If a field is missing, use "".
+- PROMOTIONS: If the user has multiple roles/titles at the same company, extract EACH role as a separate entry in the 'experiences' array. Do NOT merge them.
 - For 'experiences', summarize the responsibilities into the 'description' field.
 - Return ONLY the JSON. No markdown.`;
 }

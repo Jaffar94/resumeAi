@@ -243,7 +243,7 @@ PHASE 2: ELITE OUTPUT GENERATION
 1. STRICT GROUNDING: Use only the facts provided. Never invent fake metrics or companies.
 2. ATS OPTIMIZATION: Weave in the top 5-7 skills from the JD naturally into the bullet points.
 3. ACHIEVEMENTS > TASKS: Do not list duties. Use the X-Y-Z formula (Accomplished [X] as measured by [Y] by doing [Z]) to highlight results.
-4. BREVITY: Keep each role to 3-4 bullets maximum. Prioritize the most impressive items.
+4. BREVITY: Aim for 3-4 bullets per role. You may add a 5th bullet ONLY if the achievement is exceptionally high-impact or contains critical keywords for the target JD. Prioritize impact over length.
 5. PROMOTIONS: Clearly separate multiple roles at the same company to show career progression.
 6. EDUCATION: Extract relevant coursework and honors to validate the candidate's expertise.
 

@@ -240,7 +240,8 @@ PHASE 1: DEEP UNDERSTANDING
 - Adjust the Tone: Match the professional standards of the industry (e.g., precise and metric-heavy for Tech/Finance, academic and skill-focused for Students).
 
 PHASE 2: ELITE OUTPUT GENERATION
-1. STRICT GROUNDING: Use only the facts provided. Never invent fake metrics or companies.
+1. STRICT GROUNDING: Use ONLY the data provided. Never invent companies, dates, or degrees. 
+2. ZERO HALLUCINATION: If a specific percentage or dollar amount is not in the data, do NOT make up a precise number (like "43%"). Instead, use high-impact power verbs and logical impact descriptors (e.g., "Led substantial growth" or "Significantly reduced costs").
 2. ATS OPTIMIZATION: Weave in the top 5-7 skills from the JD naturally into the bullet points.
 3. ACHIEVEMENTS > TASKS: Do not list duties. Use the X-Y-Z formula (Accomplished [X] as measured by [Y] by doing [Z]) to highlight results. CRITICAL: Quantify at least 60% of your bullets with numbers (%, $, #, or scale) to prove impact.
 4. BREVITY: Target a high-impact single-page layout for most candidates. However, if the candidate has 10+ years of deep experience or extensive company history, you may prioritize detail over page count. Aim for 3-4 bullets per role. 
@@ -284,10 +285,11 @@ STRICT JSON FORMAT:
 
 INSTRUCTIONS:
 - If a field is missing, use "".
-- PROMOTIONS (CRITICAL): If the user has multiple roles at the same company, YOU MUST EXTRACT EACH ONE SEPARATELY. 
-  - Example: If text says "Google: Senior Engineer (2022-Present), Junior Engineer (2020-2022)", create TWO separate objects in the 'experiences' array. Do NOT merge them into one.
-- For 'experiences', summarize the responsibilities into the 'description' field.
-- Return ONLY the JSON. No markdown.`;
+- DEEP EXTRACTION: Do not just copy-paste. Read the entire document carefully. 
+- PROMOTIONS (CRITICAL): If the user has multiple roles at the same company, YOU MUST EXTRACT EACH ONE SEPARATELY.
+- PROJECTS: If a project is mentioned within a job description, extract it into the 'projects' array.
+- SKILLS: Extract both hard technical skills and core competencies (e.g. Leadership, Strategy) mentioned throughout the text.
+- Return ONLY the JSON. No markdown. No conversational filler.`;
 }
 
 async function parseResumeToForm(resumeText) {

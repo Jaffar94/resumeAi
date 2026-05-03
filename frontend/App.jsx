@@ -71,7 +71,7 @@ export default function App() {
   }, []);
 
   // Use environment variable for production, default to localhost for development
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || "https://resumeai-yq3d.onrender.com";
 
   /* --- submit --- */
   const submit = async () => {

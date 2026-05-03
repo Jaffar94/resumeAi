@@ -957,6 +957,44 @@ h1, h2, h3 {
 /* ===== RESUME TEMPLATE (PRINT ONLY) ===== */
 .resume-template {
   display: none;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+.job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+  gap: 24px;
+}
+
+.job-title {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #000 !important;
+  flex: 1;
+}
+
+.job-dates {
+  font-size: 10pt;
+  color: #444 !important;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.resume-section h2 {
+  font-size: 13pt;
+  font-weight: 700;
+  color: #000 !important;
+  border-bottom: 1.5px solid #000;
+  padding-bottom: 3px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .hidden-screen {
@@ -1027,14 +1065,6 @@ h1, h2, h3 {
   }
 
   .resume-section h2 {
-    font-size: 13pt;
-    font-weight: 700;
-    color: #000 !important;
-    border-bottom: 1.5px solid #000;
-    padding-bottom: 3px;
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     font-family: 'Outfit', sans-serif;
   }
 
@@ -1065,12 +1095,7 @@ h1, h2, h3 {
   }
 
   .job-dates {
-    font-size: 10pt;
     color: #444 !important;
-    font-weight: 600;
-    text-align: right;
-    white-space: nowrap; /* Prevents dates from wrapping or being crushed */
-    flex-shrink: 0;
   }
 
   .resume-template ul {

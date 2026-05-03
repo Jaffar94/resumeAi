@@ -1013,7 +1013,7 @@ h1, h2, h3 {
 @media print {
   @page {
     size: auto;
-    margin: 1.2cm 1.5cm; /* True margins for EVERY page */
+    margin: 0; /* Officially kills the browser's header/footer */
   }
 
   html, body {
@@ -1024,8 +1024,16 @@ h1, h2, h3 {
     print-color-adjust: exact;
   }
 
+  /* The magic margin-repeater hack */
+  .print-margin-top { height: 1.5cm; }
+  .print-margin-bottom { height: 1.5cm; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+
   body {
-    padding: 0 !important; /* Page margins are now handled by @page */
+    padding: 0 !important;
   }
 
   .hidden-screen, .tabs-nav, .btn, .copy-btn, .mode-toggle, .input-area, .generated-result, .dashboard-grid, .app::before, .app::after, .orb-3, .hero-main {

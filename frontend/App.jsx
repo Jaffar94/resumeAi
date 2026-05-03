@@ -320,9 +320,20 @@ export default function App() {
               <div className="builder-wizard fade-in">
                 {/* Step Indicator */}
                 <div className="wizard-steps">
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <div key={s} className={`w-step ${formStep >= s ? "active" : ""}`}>
-                      {s === 1 ? "👤" : s === 2 ? "💼" : s === 3 ? "🎓" : s === 4 ? "🚀" : "🛠️"}
+                  {[
+                    { s: 1, label: "Profile" },
+                    { s: 2, label: "Experience" },
+                    { s: 3, label: "Education" },
+                    { s: 4, label: "Projects" },
+                    { s: 5, label: "Skills" }
+                  ].map(step => (
+                    <div 
+                      key={step.s} 
+                      className={`w-step ${formStep === step.s ? "active" : ""} ${formStep > step.s ? "completed" : ""}`}
+                      onClick={() => setFormStep(step.s)}
+                    >
+                      <span className="step-num">{step.s}</span>
+                      <span className="step-label">{step.label}</span>
                     </div>
                   ))}
                 </div>
@@ -359,9 +370,9 @@ export default function App() {
                 {/* STEP 2: Experience */}
                 {formStep === 2 && (
                   <div className="form-section fade-in">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="section-header">
                       <h3>Professional Experience</h3>
-                      <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addExperience}>+ Add Job</button>
+                      <button className="add-btn" onClick={addExperience}>+ Add Professional Experience</button>
                     </div>
                     {experiences.map((exp) => (
                       <div key={exp.id} className={`form-card ${exp.isRemoving ? "removing" : ""}`}>
@@ -380,9 +391,9 @@ export default function App() {
                 {/* STEP 3: Education */}
                 {formStep === 3 && (
                   <div className="form-section fade-in">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="section-header">
                       <h3>Education</h3>
-                      <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addEducation}>+ Add Education</button>
+                      <button className="add-btn" onClick={addEducation}>+ Add Education Entry</button>
                     </div>
                     {educations.map((edu) => (
                       <div key={edu.id} className={`form-card ${edu.isRemoving ? "removing" : ""}`}>
@@ -401,9 +412,9 @@ export default function App() {
                 {/* STEP 4: Projects */}
                 {formStep === 4 && (
                   <div className="form-section fade-in">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="section-header">
                       <h3>Key Projects</h3>
-                      <button className="btn reset" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={addProject}>+ Add Project</button>
+                      <button className="add-btn" onClick={addProject}>+ Add New Project</button>
                     </div>
                     {projects.map((proj) => (
                       <div key={proj.id} className={`form-card ${proj.isRemoving ? "removing" : ""}`}>
@@ -530,7 +541,7 @@ export default function App() {
                 </div>
                 <p className="score-label" style={{ color: getScoreColor(score) }}>{getScoreLabel(score)}</p>
 
-                {data.detected_role && <p className="detected-role">🎯 {data.detected_role}</p>}
+                {data.detected_role && <p className="detected-role">{data.detected_role}</p>}
 
                 {data.ats_score !== undefined && (
                   <div className="ats-box">
@@ -726,9 +737,12 @@ export default function App() {
           <>
             <div className="generated-result fade-in" style={{ textAlign: "center" }}>
               <h2 className="gradient-text" style={{ fontSize: "32px", marginBottom: "16px" }}>Resume Generated Successfully! ✨</h2>
-              <p className="hero-sub" style={{ marginBottom: "32px" }}>Your professional resume is ready to download.</p>
+              <p className="hero-sub" style={{ marginBottom: "20px", fontSize: "14px", opacity: 0.8 }}>
+                <span style={{ color: "var(--accent)" }}>⚠️ Note:</span> AI has provided realistic estimates for metrics to optimize your impact. 
+                Please review these points before finalizing.
+              </p>
 
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', maxWidth: "600px", margin: "0 auto" }}>
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', maxWidth: "600px", margin: "32px auto 0" }}>
                 <button className="btn reset" style={{ flex: 1 }} onClick={() => setData(null)}>← Edit Info</button>
                 <button className="btn cta-btn" style={{ flex: 1 }} onClick={() => window.print()}>📄 Download PDF</button>
                 <button className="btn reset" style={{ flex: 1, background: "rgba(255,255,255,0.05)" }} onClick={resetApp}>🏠 Main Menu</button>
@@ -817,14 +831,14 @@ export default function App() {
                         </div>
                       )}
 
-                        <div className="resume-section">
-                          <h2>Skills & Expertise</h2>
-                          <div className="skills-list">
-                            {data.skills.map((s, i) => (
-                              <div key={i} className="skill-item">{s}</div>
-                            ))}
-                          </div>
+                      <div className="resume-section">
+                        <h2>Skills & Expertise</h2>
+                        <div className="skills-list">
+                          {data.skills.map((s, i) => (
+                            <div key={i} className="skill-item">{s}</div>
+                          ))}
                         </div>
+                      </div>
                     </td>
                   </tr>
                 </tbody>

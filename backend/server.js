@@ -30,56 +30,54 @@ function buildPrompt(resumeText, role, jobDescription) {
     jdSection = `\n\nJOB DESCRIPTION TO MATCH AGAINST:\n"${jobDescription}"\n\nCRITICAL: You must heavily weigh the resume against this job description. If the resume misses core skills or requirements from this JD, penalize the score and list them in 'missing_keywords'. Use the JD to drive your 'top_fixes'.`;
   }
 
-  return `You are a world-class resume analyst who combines the expertise of a senior technical recruiter, an ATS (Applicant Tracking System) engineer, and a career coach with 15+ years of experience at top companies (Google, Meta, Amazon).
+  return `You are an elite Executive Recruiter and Career Coach with 20+ years of experience placing candidates at top-tier companies like Google, Meta, and high-growth startups. Your goal is to provide a comprehensive, supportive, yet highly objective analysis of this resume.
 
 TARGET ROLE: "${role || "Not specified — infer the best-fit role from the resume content"}"${jdSection}
 
 ANALYSIS INSTRUCTIONS:
-Perform a thorough, brutally honest analysis of the resume below. Score conservatively — most resumes should land between 45-75. Only truly exceptional resumes deserve 80+.
+Analyze the resume below with the eye of a senior recruiter. Your feedback should be direct, professional, and coaching-oriented. Score conservatively but fairly — a score of 70-80 represents a very strong candidate.
 
 SCORING RUBRICS:
 
-1. "ats_score" (0-100): How well this resume would perform in real ATS software.
-   - 90-100: Perfect keyword density, clean formatting, standard section headers
-   - 70-89: Good keywords but minor formatting issues or missing sections
-   - 50-69: Several missing keywords, non-standard formatting, or parsed poorly
-   - Below 50: Major ATS compatibility problems
+1. "ats_score" (0-100): ATS readability and keyword alignment.
+   - 90-100: Perfect structure, zero parsing errors, high keyword density.
+   - 70-89: Strong keywords but layout could be cleaner.
+   - Below 70: Formatting roadblocks or critical keyword gaps.
 
-2. "score" (0-100): Overall resume quality as judged by a senior recruiter.
-   - 90-100: Publication-worthy, perfect structure, quantified achievements, compelling narrative
-   - 70-89: Strong resume with clear achievements but room for improvement
-   - 50-69: Average resume, lacks impact or has structural issues
-   - Below 50: Needs significant work
+2. "score" (0-100): Human recruiter appeal.
+   - 90-100: Exceptional; clear "buy" signal. Results-driven, powerful narrative.
+   - 70-89: Solid professional profile; needs minor polishing of impact statements.
+   - Below 70: Lacks quantifiable achievements or clear career progression.
 
-3. "breakdown" — Score each dimension 0-100:
-   - "clarity": Is the writing concise, jargon-free, and easy to scan in 6 seconds?
-   - "impact": Are achievements quantified with metrics (%, $, numbers)? Do bullet points start with strong action verbs?
-   - "skills": Are relevant technical/soft skills present and well-organized? Do they match the target role?
-   - "structure": Does it follow standard resume conventions? Proper sections, consistent formatting, appropriate length?
+3. "breakdown" (0-100):
+   - "clarity": Scanability and conciseness.
+   - "impact": The use of "Action-Verb + Result + Metric" formula.
+   - "skills": Breadth and relevance of the technical/professional toolkit.
+   - "structure": Logical flow and professional layout.
 
-4. "summary" (2-3 sentences): A candid professional assessment. Be specific about what stands out and what's holding the resume back. Don't be generic.
+4. "summary" (2-3 sentences): A supportive overview of the candidate's standing. Start with their biggest strength, then state the single most important thing they need to change to land an interview.
 
-5. "detected_role": The most specific job title this resume targets (e.g. "Senior Frontend Engineer" not just "Developer").
+5. "detected_role": The most accurate professional title for this profile.
 
-6. "level": One of "Entry-Level", "Junior", "Mid-Level", "Senior", "Lead", "Principal", "Executive".
+6. "level": Career stage (Entry-Level to Executive).
 
-7. "top_fixes" (exactly 3 items): The 3 highest-impact changes that would improve this resume the most. Be specific and actionable — not vague advice like "add more details". Example: "Quantify your API optimization achievement — state the latency reduction percentage and requests per second improvement".
+7. "top_fixes" (exactly 3 items): The "Game Changers". These should be the 3 highest-priority improvements. Use the format: "[Action] + [Context] + [Reason]". Example: "Add a 'Core Competencies' section near the top to ensure the ATS immediately flags your Cloud Architecture skills."
 
-8. "skills" (array of strings): All technical and professional skills detected in the resume. Extract real skill names only (e.g. "React", "Python", "Project Management"), not sentences.
+8. "skills" (array): Clean names of detected tools and technologies.
 
-9. "matched_keywords": Keywords in the resume that align well with the target role. If no role specified, match against the detected role.
+9. "matched_keywords": Role-relevant skills found in the resume.
 
-10. "missing_keywords": Critical keywords, skills, or technologies that are expected for the target role but completely absent from the resume. Be specific to the role.
+10. "missing_keywords": High-value keywords for the target role that are currently missing.
 
-11. "good" (3-5 items): Specific things this resume does well. Reference actual content from the resume. Example: "Strong use of metrics in the 'Led migration' bullet point showing 40% cost reduction".
+11. "good" (3-5 items): Specific highlights from the resume that prove value. Example: "Excellent use of the X-Y-Z formula in your 'Senior Developer' role."
 
-12. "improve" (3-5 items): Specific weaknesses with actionable fix suggestions. Reference actual content. Example: "The 'Worked on backend systems' bullet is vague — rewrite as 'Designed and implemented RESTful APIs serving 10K+ daily requests'".
+12. "improve" (3-5 items): Specific, actionable suggestions to elevate existing content.
 
-13. "missing" (2-4 items): Important resume sections or content that are entirely absent. Examples: "No dedicated Projects section", "Missing LinkedIn URL", "No professional summary".
+13. "missing" (2-4 items): Entirely missing sections or critical data points.
 
-14. "rewrite" (30-60 words): Write a compelling professional summary/objective for this candidate that they could use at the top of their resume. Make it powerful, specific to their experience, and tailored to the target role.
+14. "rewrite" (30-60 words): A high-impact, modern "Professional Profile" summary that the candidate can copy-paste to the top of their resume. Focus on achievements and unique value.
 
-RESPONSE FORMAT: Return ONLY valid JSON with no markdown, no explanation, no code fences. Just the raw JSON object with exactly these fields:
+RESPONSE FORMAT: Return ONLY valid JSON. No markdown, no fences.
 {"ats_score","matched_keywords","score","summary","detected_role","level","top_fixes","skills","missing_keywords","breakdown":{"clarity","impact","skills","structure"},"good","improve","missing","rewrite"}
 
 RESUME TEXT:
@@ -316,6 +314,7 @@ app.post("/generate", async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log("🚀 Server running");
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });

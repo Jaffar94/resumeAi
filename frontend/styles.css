@@ -963,20 +963,20 @@ h1, h2, h3 {
 }
 
 .job-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
   margin-bottom: 4px;
-  gap: 24px;
+  width: 100%;
 }
 
 .job-title {
   font-size: 11pt;
   font-weight: 700;
   color: #000 !important;
-  flex: 1;
-  min-width: 0; /* Critical for flex child wrapping */
-  overflow-wrap: break-word; /* Forces long words to wrap */
+  min-width: 0;
+  word-wrap: break-word;
 }
 
 .job-dates {
@@ -985,7 +985,6 @@ h1, h2, h3 {
   font-weight: 600;
   text-align: right;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .resume-section h2 {

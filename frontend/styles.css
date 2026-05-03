@@ -1011,82 +1011,94 @@ h1, h2, h3 {
   /* Show only the resume template on print if we are generating */
   .resume-template.printing {
     display: block !important;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    line-height: 1.4;
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    line-height: 1.5;
     width: 100%;
     box-sizing: border-box;
+    color: #1a1a1a !important;
   }
-  .resume-template h1 {
-    font-size: 26pt;
-    font-weight: 700;
-    margin-bottom: 4px;
+
+  .resume-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .resume-header h1 {
+    font-size: 28pt;
+    font-weight: 800;
+    margin-bottom: 8px;
     color: #000 !important;
-    text-align: center;
-    letter-spacing: 0.5px;
-    text-transform: capitalize;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    font-family: 'Outfit', sans-serif;
   }
-  .resume-template .contact-info {
+
+  .contact-line {
     font-size: 10pt;
-    color: #333 !important;
-    text-align: center;
+    color: #444 !important;
+    margin-bottom: 4px;
+  }
+
+  .resume-section {
     margin-bottom: 24px;
   }
-  .resume-template h2 {
-    font-size: 12pt;
+
+  .resume-section h2 {
+    font-size: 13pt;
+    font-weight: 700;
     color: #000 !important;
-    border-bottom: 1px solid #000;
+    border-bottom: 2px solid #000;
     padding-bottom: 4px;
-    margin-top: 20px;
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
   }
-  .resume-template p {
-    font-size: 10pt;
-    margin-bottom: 14px;
-    color: #222 !important;
-    text-align: left;
+
+  .resume-section p {
+    font-size: 10.5pt;
+    margin-bottom: 10px;
   }
-  .resume-template .job {
-    margin-bottom: 16px;
+
+  .job {
+    margin-bottom: 18px;
   }
-  .resume-template .job-header {
+
+  .job-header {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .job-title {
+    font-size: 11.5pt;
     font-weight: 700;
-    margin-bottom: 4px;
-    font-size: 11pt;
     color: #000 !important;
-    width: 100%;
-    box-sizing: border-box;
   }
-  .resume-template .job-title {
-    color: #000 !important;
-    text-transform: capitalize;
-  }
-  .resume-template .job-dates {
-    color: #444 !important;
+
+  .job-dates {
     font-size: 10pt;
+    color: #555 !important;
     font-weight: 500;
   }
+
   .resume-template ul {
-    padding-left: 20px;
-    margin-top: 4px;
-    margin-bottom: 12px;
+    margin: 0;
+    padding-left: 18px;
   }
+
   .resume-template li {
-    font-size: 10pt;
-    margin-bottom: 6px;
-    color: #222 !important;
-    text-align: left;
+    font-size: 10.5pt;
+    margin-bottom: 5px;
+    color: #333 !important;
+    line-height: 1.4;
   }
-  .resume-template .skills-list {
-    font-size: 10pt;
-    line-height: 1.8;
-    color: #222 !important;
-    text-align: left;
+
+  .skills-list {
+    font-size: 10.5pt;
+    line-height: 1.6;
+    color: #333 !important;
   }
 
   /* ===== ANALYZER PRINT TEMPLATE ===== */
@@ -1150,4 +1162,178 @@ h1, h2, h3 {
     padding: 16px;
     border-left: 4px solid #555;
   }
+}
+
+/* ===== BUILDER WIZARD STYLES ===== */
+.builder-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.wizard-steps {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.w-step {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  color: var(--text-secondary);
+}
+
+.w-step.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: scale(1.1);
+}
+
+.form-section h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: var(--accent-primary);
+  font-family: 'Outfit', sans-serif;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.form-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 24px;
+  padding-top: 45px; /* Increased to give button space */
+  margin-top: 15px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.form-card .form-grid {
+  margin-top: 10px;
+}
+
+.form-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.remove-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.remove-btn:hover {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+
+.wizard-nav button {
+  padding: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .glass {
+    padding: 20px;
+    width: 95%;
+  }
+
+  .hero-main h1 {
+    font-size: 36px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-steps {
+    gap: 10px;
+  }
+
+  .w-step {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-tabs {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    font-size: 13px;
+  }
+
+  .score-gauge {
+    width: 120px;
+    height: 120px;
+  }
+
+  .score-value {
+    font-size: 32px;
+  }
+}
+
+.prefill-btn {
+  background: linear-gradient(135deg, var(--accent-primary), #6366f1);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  border: none;
+}
+
+.prefill-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+  filter: brightness(1.1);
+}
+
+.prefill-btn[disabled] {
+  opacity: 0.7;
+  cursor: wait;
 }

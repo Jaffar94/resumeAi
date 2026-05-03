@@ -168,9 +168,9 @@ async function fetchGroq(model, prompt) {
 /* ---------- UNIFIED AI QUEUE ---------- */
 async function callAIQueue(prompt) {
   const priorityQueue = [
-    { provider: "gemini", id: "gemini-2.5-flash" },
     { provider: "groq",   id: "llama-3.3-70b-versatile" },
-    { provider: "gemini", id: "gemini-2.0-flash" },
+    { provider: "gemini", id: "gemini-1.5-flash" },
+    { provider: "gemini", id: "gemini-1.5-pro" },
     { provider: "groq",   id: "mixtral-8x7b-32768" },
     { provider: "gemini", id: "gemini-2.5-flash-lite" },
     { provider: "gemini", id: "gemini-2.0-flash-lite" },
@@ -281,7 +281,8 @@ STRICT JSON FORMAT:
 
 INSTRUCTIONS:
 - If a field is missing, use "".
-- PROMOTIONS: If the user has multiple roles/titles at the same company, extract EACH role as a separate entry in the 'experiences' array. Do NOT merge them.
+- PROMOTIONS (CRITICAL): If the user has multiple roles at the same company, YOU MUST EXTRACT EACH ONE SEPARATELY. 
+  - Example: If text says "Google: Senior Engineer (2022-Present), Junior Engineer (2020-2022)", create TWO separate objects in the 'experiences' array. Do NOT merge them into one.
 - For 'experiences', summarize the responsibilities into the 'description' field.
 - Return ONLY the JSON. No markdown.`;
 }

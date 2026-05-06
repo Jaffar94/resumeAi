@@ -255,6 +255,316 @@ export default function App() {
     }
   };
 
+  /* --- clean print via iframe (kills browser headers/footers completely but maintains margins) --- */
+  const handlePrint = () => {
+    const printEl = document.querySelector('.resume-template.printing') || document.querySelector('.analyzer-print-template.printing');
+    if (!printEl) { window.print(); return; }
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.top = '-10000px';
+    iframe.style.left = '-10000px';
+    iframe.style.width = '210mm';
+    iframe.style.height = '297mm';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html>
+<html>
+<head>
+<title> </title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap');
+
+@page {
+  size: A4;
+  margin: 0; /* Kills default browser headers and footers completely */
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 210mm;
+  background: white;
+  color: #1a1a1a;
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.4;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Hack to create margins on every page without triggering browser headers */
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: none;
+}
+
+.print-table td, .print-table th {
+  border: none;
+  padding: 0;
+}
+
+.page-header-space {
+  height: 0.6in; /* Top margin for every page */
+}
+
+.page-footer-space {
+  height: 0.6in; /* Bottom margin for every page */
+}
+
+.resume-content {
+  width: 100%;
+  padding: 0 0.7in; /* Left/Right margin for every page */
+}
+
+/* ===== HEADER ===== */
+.resume-header {
+  text-align: center;
+  margin-bottom: 14pt;
+  padding-bottom: 10pt;
+  border-bottom: 2px solid #1a1a1a;
+}
+
+.resume-header h1 {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 22pt;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #000;
+  margin-bottom: 6pt;
+  line-height: 1.1;
+}
+
+.contact-line {
+  font-size: 9.5pt;
+  color: #333;
+  margin-bottom: 2pt;
+  line-height: 1.4;
+}
+
+.contact-line span {
+  white-space: nowrap;
+}
+
+.contact-sep {
+  margin: 0 5pt;
+  color: #999;
+}
+
+/* ===== SECTIONS ===== */
+.resume-section {
+  margin-top: 12pt;
+}
+
+.resume-section h2 {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 11pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #000;
+  border-bottom: 1.5px solid #000;
+  padding-bottom: 2pt;
+  margin-bottom: 8pt;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
+/* Summary */
+.resume-section > p.summary-text {
+  font-size: 10pt;
+  line-height: 1.45;
+  color: #222;
+  margin-bottom: 4pt;
+}
+
+/* ===== JOB / ENTRY BLOCK ===== */
+.job {
+  margin-bottom: 10pt;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12pt;
+  margin-bottom: 3pt;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
+.job-title {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #000;
+  flex: 1;
+  line-height: 1.25;
+}
+
+.job-dates {
+  font-size: 9.5pt;
+  font-weight: 600;
+  color: #444;
+  white-space: nowrap;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Bullet points */
+.job ul {
+  margin: 2pt 0 0 0;
+  padding-left: 16pt;
+}
+
+.job li {
+  font-size: 10pt;
+  line-height: 1.4;
+  margin-bottom: 2.5pt;
+  color: #222;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.job li::marker {
+  color: #555;
+}
+
+/* Education details */
+.edu-details {
+  font-size: 9.5pt;
+  font-style: italic;
+  color: #444;
+  margin-top: 2pt;
+}
+
+/* ===== SKILLS ===== */
+.skills-section-print {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4pt 0;
+  margin-top: 4pt;
+  font-size: 10pt;
+  color: #222;
+  line-height: 1.5;
+}
+
+.skill-chip {
+  display: inline;
+}
+
+.skill-chip::after {
+  content: " · ";
+  color: #999;
+}
+
+.skill-chip:last-child::after {
+  content: "";
+}
+
+/* ===== ANALYZER PRINT ===== */
+.analyzer-content {
+  padding: 0 0.7in;
+}
+
+.analyzer-content h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20pt;
+  font-weight: 700;
+  border-bottom: 2px solid #000;
+  padding-bottom: 8pt;
+  margin-bottom: 16pt;
+}
+
+.analyzer-content h2 {
+  font-size: 13pt;
+  font-weight: 700;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 4pt;
+  margin-top: 18pt;
+  margin-bottom: 8pt;
+}
+
+.analyzer-content p {
+  font-size: 10pt;
+  line-height: 1.5;
+  margin-bottom: 8pt;
+  color: #222;
+}
+
+.analyzer-content ul {
+  padding-left: 18pt;
+  margin-bottom: 10pt;
+}
+
+.analyzer-content li {
+  font-size: 10pt;
+  line-height: 1.5;
+  margin-bottom: 4pt;
+  color: #222;
+}
+
+.analyzer-content .meta-line {
+  font-size: 10.5pt;
+  margin: 3pt 0;
+}
+
+.analyzer-content .skills-box {
+  padding: 10pt;
+  border: 1px solid #ddd;
+  border-radius: 3pt;
+  margin-bottom: 10pt;
+}
+
+.analyzer-content .rewrite-box {
+  font-style: italic;
+  padding: 10pt;
+  border-left: 3pt solid #555;
+  margin-top: 6pt;
+}
+</style>
+</head>
+<body>
+  <table class="print-table">
+    <thead>
+      <tr><td><div class="page-header-space"></div></td></tr>
+    </thead>
+    <tbody>
+      <tr><td>
+        ${printEl.innerHTML}
+      </td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td><div class="page-footer-space"></div></td></tr>
+    </tfoot>
+  </table>
+</body>
+</html>`);
+    doc.close();
+
+    iframe.contentWindow.focus();
+    setTimeout(() => {
+      iframe.contentWindow.print();
+      setTimeout(() => document.body.removeChild(iframe), 1000);
+    }, 500);
+  };
+
   /* --- copy rewrite --- */
   const copyRewrite = () => {
     if (!data?.rewrite) return;
@@ -561,7 +871,7 @@ export default function App() {
                   <button className="btn reset fade-in stagger-9" style={{ flex: 1, marginTop: 0 }} onClick={resetApp}>
                     🏠 Home
                   </button>
-                  <button className="btn cta-btn fade-in stagger-9" style={{ flex: 1, marginTop: 0 }} onClick={() => window.print()}>
+                  <button className="btn cta-btn fade-in stagger-9" style={{ flex: 1, marginTop: 0 }} onClick={handlePrint}>
                     📄 Save Report
                   </button>
                 </div>
@@ -744,108 +1054,105 @@ export default function App() {
 
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', maxWidth: "600px", margin: "32px auto 0" }}>
                 <button className="btn reset" style={{ flex: 1 }} onClick={() => setData(null)}>← Edit Info</button>
-                <button className="btn cta-btn" style={{ flex: 1 }} onClick={() => window.print()}>📄 Download PDF</button>
+                <button className="btn cta-btn" style={{ flex: 1 }} onClick={handlePrint}>📄 Download PDF</button>
                 <button className="btn reset" style={{ flex: 1, background: "rgba(255,255,255,0.05)" }} onClick={resetApp}>🏠 Main Menu</button>
               </div>
             </div>
 
             {/* The actual printable template (hidden via CSS until printed) */}
             <div className="resume-template printing">
-              <table>
-                <thead>
-                  <tr><td><div className="print-margin-top"></div></td></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <div className="resume-header">
-                        <h1>{name || "Your Name"}</h1>
-                        <div className="contact-line">
-                          {contact && <span>{contact}</span>}
-                          {phone && <span> | {phone}</span>}
-                          {location && <span> | {location}</span>}
+              <div className="resume-content">
+                <div className="resume-header">
+                  <h1>{name || "Your Name"}</h1>
+                  
+                  <div className="contact-line">
+                    {contact && <span>{contact}</span>}
+                    {contact && phone && <span className="contact-sep">•</span>}
+                    {phone && <span>{phone}</span>}
+                    {(contact || phone) && location && <span className="contact-sep">•</span>}
+                    {location && <span>{location}</span>}
+                  </div>
+                  
+                  {(linkedin || website) && (
+                    <div className="contact-line">
+                      {linkedin && <span>{linkedin}</span>}
+                      {linkedin && website && <span className="contact-sep">•</span>}
+                      {website && <span>{website}</span>}
+                    </div>
+                  )}
+                </div>
+
+                {data.summary && (
+                  <div className="resume-section">
+                    <h2>Professional Summary</h2>
+                    <p className="summary-text">{data.summary}</p>
+                  </div>
+                )}
+
+                {data.experience && data.experience.length > 0 && (
+                  <div className="resume-section">
+                    <h2>Professional Experience</h2>
+                    {data.experience.map((exp, i) => (
+                      <div className="job" key={i}>
+                        <div className="job-header">
+                          <span className="job-title">{exp.title} | {exp.company}</span>
+                          <span className="job-dates">{exp.dates}</span>
                         </div>
-                        <div className="contact-line">
-                          {linkedin && <span>LinkedIn: {linkedin}</span>}
-                          {website && <span> | Portfolio: {website}</span>}
-                        </div>
+                        {exp.bullets && exp.bullets.length > 0 && (
+                          <ul>
+                            {exp.bullets.map((b, j) => <li key={j}>{b}</li>)}
+                          </ul>
+                        )}
                       </div>
+                    ))}
+                  </div>
+                )}
 
-                      {data.summary && (
-                        <div className="resume-section">
-                          <h2>Professional Summary</h2>
-                          <p>{data.summary}</p>
+                {data.projects && data.projects.length > 0 && data.projects.some(p => p.name && p.name.trim()) && (
+                  <div className="resume-section">
+                    <h2>Key Projects</h2>
+                    {data.projects.filter(p => p.name && p.name.trim()).map((proj, i) => (
+                      <div className="job" key={i}>
+                        <div className="job-header">
+                          <span className="job-title">{proj.name}</span>
+                          <span className="job-dates">{proj.tech}</span>
                         </div>
-                      )}
-
-                      {data.experience && data.experience.length > 0 && (
-                        <div className="resume-section">
-                          <h2>Professional Experience</h2>
-                          {data.experience.map((exp, i) => (
-                            <div className="job" key={i}>
-                              <div className="job-header">
-                                <span className="job-title">{exp.title} | {exp.company}</span>
-                                <span className="job-dates">{exp.dates}</span>
-                              </div>
-                              {exp.bullets && exp.bullets.length > 0 && (
-                                <ul>
-                                  {exp.bullets.map((b, j) => <li key={j}>{b}</li>)}
-                                </ul>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {data.projects && data.projects.length > 0 && (
-                        <div className="resume-section">
-                          <h2>Key Projects</h2>
-                          {data.projects.map((proj, i) => (
-                            <div className="job" key={i}>
-                              <div className="job-header">
-                                <span className="job-title">{proj.name}</span>
-                                <span className="job-dates" style={{ fontStyle: 'italic', fontWeight: 400 }}>{proj.tech}</span>
-                              </div>
-                              {proj.bullets && proj.bullets.length > 0 && (
-                                <ul>
-                                  {proj.bullets.map((b, j) => <li key={j}>{b}</li>)}
-                                </ul>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {data.education && data.education.length > 0 && (
-                        <div className="resume-section">
-                          <h2>Education</h2>
-                          {data.education.map((edu, i) => (
-                            <div className="job" key={i}>
-                              <div className="job-header">
-                                <span className="job-title">{edu.degree} - {edu.school}</span>
-                                <span className="job-dates">{edu.dates}</span>
-                              </div>
-                              {edu.details && <p style={{ fontSize: '10pt', marginTop: '2px', fontStyle: 'italic' }}>{edu.details}</p>}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="resume-section">
-                        <h2>Skills & Expertise</h2>
-                        <div className="skills-list">
-                          {data.skills.map((s, i) => (
-                            <div key={i} className="skill-item">{s}</div>
-                          ))}
-                        </div>
+                        {proj.bullets && proj.bullets.length > 0 && (
+                          <ul>
+                            {proj.bullets.map((b, j) => <li key={j}>{b}</li>)}
+                          </ul>
+                        )}
                       </div>
-                    </td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr><td><div className="print-margin-bottom"></div></td></tr>
-                </tfoot>
-              </table>
+                    ))}
+                  </div>
+                )}
+
+                {data.education && data.education.length > 0 && (
+                  <div className="resume-section">
+                    <h2>Education</h2>
+                    {data.education.map((edu, i) => (
+                      <div className="job" key={i}>
+                        <div className="job-header">
+                          <span className="job-title">{edu.degree} - {edu.school}</span>
+                          <span className="job-dates">{edu.dates}</span>
+                        </div>
+                        {edu.details && <div className="edu-details">{edu.details}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {data.skills && data.skills.length > 0 && (
+                  <div className="resume-section skills-section-print">
+                    <h2>Skills & Expertise</h2>
+                    <div className="skills-grid">
+                      {data.skills.map((s, i) => (
+                        <div key={i} className="skill-chip">{s}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}

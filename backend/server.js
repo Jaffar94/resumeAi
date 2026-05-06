@@ -61,7 +61,7 @@ JSON SCHEMA:
 }
 
 RESUME:
-${resumeText}t}`;
+${resumeText}`;
 }
 
 /* ---------- PARSE AI RESPONSE ---------- */
@@ -212,6 +212,7 @@ DIRECTIVES:
 5. PROMOTIONS: Separate titles at 1 company to show upward mobility.
 6. ATOMIC SKILLS: Array of individual tools (8-10 items). No grouping.
 7. GROUNDING: Stay 100% true to data. Elevate tone, don't invent facts.
+8. PROJECTS: Only include the "projects" array if the user provided actual project data. If no projects were given, return an empty array []. NEVER invent projects.
 
 FORMAT: Return ONLY valid JSON.
 {"summary":"","experience":[{"title":"","company":"","dates":"","bullets":[]}],"education":[{"degree":"","school":"","dates":"","details":""}],"projects":[{"name":"","tech":"","bullets":[]}],"skills":[]}
@@ -227,26 +228,32 @@ async function generateResume(formData) {
 
 /* ---------- PARSER PROMPT (Pre-fill) ---------- */
 function buildParsePrompt(resumeText) {
-  return `You are a high-speed data extraction engine. Extract into EXACT JSON format.
+  return `Extract resume data into JSON. Preserve ALL bullet points and details.
 
 RESUME:
 ${resumeText}
 
 SCHEMA:
 {
-  "name": "", "email": "", "phone": "", "location": "", "linkedin": "", "website": "",
-  "experiences": [{"company": "", "title": "", "dates": "", "description": ""}],
+  "name": "",
+  "email": "",
+  "phone": "",
+  "location": "",
+  "linkedin": "",
+  "website": "",
+  "experiences": [{"company": "", "title": "", "dates": "", "description": "full bullet points joined with newlines"}],
   "educations": [{"school": "", "degree": "", "dates": "", "description": ""}],
   "projects": [{"name": "", "tech": "", "description": ""}],
-  "skills": "atomic list"
+  "skills": "comma-separated list"
 }
 
-DIRECTIVES:
-1. NESTED ROLES: Split multiple titles/promotions at 1 company into distinct 'experiences' entries.
-2. DATA EXHAUSTION: Extract all metrics, tools, and project details.
-3. ATOMIC SKILLS: Extract as individual strings.
-4. LINGUISTIC: Normalize dates ('Month Year - Month Year'), fix case, strip bullets.
-5. Return ONLY JSON.`;
+RULES:
+1. NESTED ROLES: If someone held multiple titles at ONE company, create SEPARATE experience entries for each title.
+2. DESCRIPTIONS: Preserve EVERY bullet point from the original resume in the description field. Join multiple bullets with newline characters. Do NOT summarize or shorten.
+3. DATES: Normalize to 'Mon YYYY - Mon YYYY' or 'Mon YYYY - Present'.
+4. SKILLS: Extract ALL skills mentioned anywhere (job descriptions, skills sections, projects). Return as comma-separated string.
+5. MISSING FIELDS: Use empty string "" for any field not found. Never use null.
+6. Return ONLY valid JSON.`;
 }
 
 async function parseResumeToForm(resumeText) {

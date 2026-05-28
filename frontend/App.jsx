@@ -148,9 +148,9 @@ export default function App() {
       if (result.location) setLocation(result.location);
       if (result.linkedin) setLinkedin(result.linkedin);
       if (result.website) setWebsite(result.website);
-      if (result.experiences) setExperiences(result.experiences.map(e => ({ ...e, id: Math.random() })));
-      if (result.educations) setEducations(result.educations.map(e => ({ ...e, id: Math.random() })));
-      if (result.projects) setProjects(result.projects.map(p => ({ ...p, id: Math.random() })));
+      if (Array.isArray(result.experiences)) setExperiences(result.experiences.map(e => ({ ...e, id: Math.random() })));
+      if (Array.isArray(result.educations)) setEducations(result.educations.map(e => ({ ...e, id: Math.random() })));
+      if (Array.isArray(result.projects)) setProjects(result.projects.map(p => ({ ...p, id: Math.random() })));
       if (result.skills) setSkills(result.skills);
 
     } catch (err) {
@@ -779,6 +779,10 @@ html, body {
                 border: 4px solid rgba(255,255,255,0.05);
                 border-top-color: var(--accent);
                 border-left-color: var(--accent-bright);
+                will-change: transform;
+                transform: translate3d(0, 0, 0);
+                backface-visibility: hidden;
+                perspective: 1000px;
                 animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
               }
               .loader-core {
@@ -795,8 +799,8 @@ html, body {
                 box-shadow: inset 0 0 20px rgba(255,255,255,0.02);
               }
               @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+                0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+                100% { transform: translate3d(0, 0, 0) rotate(360deg); }
               }
               .loading-text {
                 font-family: "Outfit", sans-serif;

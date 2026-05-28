@@ -101,9 +101,26 @@ function sanitize(parsed) {
   };
 }
 
+/* ---------- FETCH WITH TIMEOUT ---------- */
+async function fetchWithTimeout(url, options, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    return res;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === "AbortError" || err.message?.includes("aborted")) {
+      throw new Error(`Request timed out after ${timeoutMs / 1000}s`);
+    }
+    throw err;
+  }
+}
+
 /* ---------- AI PROVIDER HELPERS ---------- */
 async function fetchGemini(model, prompt) {
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
       method: "POST",
@@ -112,7 +129,8 @@ async function fetchGemini(model, prompt) {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.2 },
       }),
-    }
+    },
+    8000
   );
   const raw = await res.json();
   if (res.status !== 200 || raw?.error) {
@@ -124,18 +142,22 @@ async function fetchGemini(model, prompt) {
 }
 
 async function fetchGroq(model, prompt) {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+  const res = await fetchWithTimeout(
+    "https://api.groq.com/openai/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.2,
+      }),
     },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.2,
-    }),
-  });
+    8000
+  );
   const raw = await res.json();
   if (res.status !== 200 || raw?.error) {
     throw new Error(raw?.error?.message || `HTTP ${res.status}`);
@@ -197,33 +219,159 @@ function buildGeneratorPrompt(formData) {
 ${!hasExperience ? "STRICT: Transform academic work into professional 'Experience'." : ""}
 
 DATA:
-- Name: ${name} | Contact: ${email}, ${phone}, ${location} | Social: ${linkedin}, ${website}
-- Target JD: ${jobDescription || "General Professional"}
-- EXP: ${experiences.map(e => `${e.title} @ ${e.company} (${e.dates}): ${e.description}`).join('\n')}
-- PROJ: ${projects.map(p => `${p.name} (${p.tech}): ${p.description}`).join('\n')}
-- EDU: ${educations.map(e => `${e.degree} @ ${e.school} (${e.dates}): ${e.description}`).join('\n')}
-- SKILLS: ${skills}
+Name: ${name || ""}
+Email: ${email || ""}
+Phone: ${phone || ""}
+Location: ${location || ""}
+LinkedIn: ${linkedin || ""}
+Website: ${website || ""}
+Target Job Description: ${jobDescription || ""}
+
+Experiences:
+${JSON.stringify(experiences || [], null, 2)}
+
+Educations:
+${JSON.stringify(educations || [], null, 2)}
+
+Projects:
+${JSON.stringify(projects || [], null, 2)}
+
+Skills:
+${Array.isArray(skills) ? skills.join(", ") : (skills || "")}
 
 DIRECTIVES:
-1. SECTOR PROTOCOL: FINANCE (Risk/Scale), TECH (Stack/Innovation), HEALTH (Outcomes).
-2. SUMMARY: 3 sentences [Identity] -> [Value Prop] -> [Top 3 Skills].
-3. EXP BULLETS: Exactly 5-6 bullets/role. Use 'High-Command' verbs (Orchestrated, Mitigated, Spearheaded, Optimized).
-4. METRIC DISCIPLINE: Exactly 2-3 bullets per role MUST have metrics (%, $, #). The remaining 3 bullets MUST be purely qualitative/descriptive to ensure authenticity.
-5. PROMOTIONS: Separate titles at 1 company to show upward mobility.
-6. ATOMIC SKILLS: Array of individual tools (8-10 items). No grouping.
-7. GROUNDING: Stay 100% true to data. Elevate tone, don't invent facts.
-8. PROJECTS: Only include the "projects" array if the user provided actual project data. If no projects were given, return an empty array []. NEVER invent projects.
+1. QUANTIFY IMPACT: Every single experience and project bullet point MUST include a metric (%, $, #). If there isn't one in the input, estimate a highly realistic, impressive business metric based on the context. Never leave a bullet without numbers.
+2. STAR METHOD: Focus bullets on Situation/Task, Action, and measurable Result.
+3. KEYWORDS: Integrate crucial keywords from the target job description if provided.
+4. NO PLACEHOLDERS: Generate complete, professional bullet points.
+5. Return ONLY valid JSON matching the schema below.
 
-FORMAT: Return ONLY valid JSON.
-{"summary":"","experience":[{"title":"","company":"","dates":"","bullets":[]}],"education":[{"degree":"","school":"","dates":"","details":""}],"projects":[{"name":"","tech":"","bullets":[]}],"skills":[]}
+JSON SCHEMA:
+{
+  "summary": "30-60 word professional summary",
+  "experience": [
+    {
+      "title": "Role Title",
+      "company": "Company Name",
+      "dates": "Dates",
+      "bullets": ["Action verb + Context + Measurable Result (%, $, or #)", "..."]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Degree",
+      "school": "School Name",
+      "dates": "Dates",
+      "details": "GPA/Awards/etc"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Project Name",
+      "tech": "Tech Stack used",
+      "bullets": ["What you built + metrics/results", "..."]
+    }
+  ],
+  "skills": ["Skill1", "Skill2"]
+}
 `;
+}
+/* ---------- CLEAN DESCRIPTION (Preserve Newlines) ---------- */
+function cleanDescription(text = "") {
+  return text
+    .replace(/[#*`]/g, "") // Remove markdown tags
+    .replace(/[^\x20-\x7E\n]/g, "") // Keep only printable ASCII and newlines
+    .replace(/[^\S\r\n]+/g, " ") // Clean multiple spaces but keep newlines
+    .trim();
+}
+
+/* ---------- DEFENSIVE SANITIZERS ---------- */
+function sanitizeParsedForm(parsed = {}) {
+  const experiences = Array.isArray(parsed.experiences || parsed.experience) 
+    ? (parsed.experiences || parsed.experience) 
+    : [];
+  const educations = Array.isArray(parsed.educations || parsed.education) 
+    ? (parsed.educations || parsed.education) 
+    : [];
+  const projects = Array.isArray(parsed.projects || parsed.project) 
+    ? (parsed.projects || parsed.project) 
+    : [];
+
+  return {
+    name: cleanText(parsed.name || ""),
+    email: cleanText(parsed.email || parsed.contact || ""),
+    phone: cleanText(parsed.phone || ""),
+    location: cleanText(parsed.location || ""),
+    linkedin: cleanText(parsed.linkedin || ""),
+    website: cleanText(parsed.website || ""),
+    experiences: experiences.map(exp => ({
+      company: cleanText(exp.company || ""),
+      title: cleanText(exp.title || ""),
+      dates: cleanText(exp.dates || ""),
+      description: cleanDescription(exp.description || "")
+    })),
+    educations: educations.map(edu => ({
+      school: cleanText(edu.school || ""),
+      degree: cleanText(edu.degree || ""),
+      dates: cleanText(edu.dates || ""),
+      description: cleanDescription(edu.description || "")
+    })),
+    projects: projects.map(proj => ({
+      name: cleanText(proj.name || ""),
+      tech: cleanText(proj.tech || ""),
+      description: cleanDescription(proj.description || "")
+    })),
+    skills: typeof parsed.skills === "string" 
+      ? cleanText(parsed.skills) 
+      : (Array.isArray(parsed.skills) ? parsed.skills.join(", ") : "")
+  };
+}
+
+function sanitizeGenerated(parsed = {}) {
+  const expList = parsed.experience || parsed.experiences || [];
+  const normalizedExp = (Array.isArray(expList) ? expList : []).map(exp => ({
+    title: exp.title || "",
+    company: exp.company || "",
+    dates: exp.dates || "",
+    bullets: Array.isArray(exp.bullets) ? exp.bullets.map(cleanText) : []
+  }));
+
+  const eduList = parsed.education || parsed.educations || [];
+  const normalizedEdu = (Array.isArray(eduList) ? eduList : []).map(edu => ({
+    degree: edu.degree || "",
+    school: edu.school || "",
+    dates: edu.dates || "",
+    details: cleanText(edu.details || edu.description || "")
+  }));
+
+  const projList = parsed.projects || parsed.project || [];
+  const normalizedProj = (Array.isArray(projList) ? projList : []).map(proj => ({
+    name: proj.name || "",
+    tech: proj.tech || "",
+    bullets: Array.isArray(proj.bullets) ? proj.bullets.map(cleanText) : []
+  }));
+
+  let normalizedSkills = [];
+  if (Array.isArray(parsed.skills)) {
+    normalizedSkills = parsed.skills.map(s => cleanText(String(s)));
+  } else if (typeof parsed.skills === "string") {
+    normalizedSkills = parsed.skills.split(",").map(s => cleanText(s));
+  }
+
+  return {
+    summary: cleanText(parsed.summary || ""),
+    experience: normalizedExp,
+    education: normalizedEdu,
+    projects: normalizedProj,
+    skills: normalizedSkills
+  };
 }
 
 async function generateResume(formData) {
   const prompt = buildGeneratorPrompt(formData);
   const parsed = await callAIQueue(prompt);
   console.log("✅ FINAL GENERATE SUCCESS");
-  return parsed;
+  return sanitizeGenerated(parsed);
 }
 
 /* ---------- PARSER PROMPT (Pre-fill) ---------- */
@@ -258,7 +406,8 @@ RULES:
 
 async function parseResumeToForm(resumeText) {
   const prompt = buildParsePrompt(resumeText);
-  return await callAIQueue(prompt);
+  const parsed = await callAIQueue(prompt);
+  return sanitizeParsedForm(parsed);
 }
 
 /* ---------- FALLBACK ---------- */

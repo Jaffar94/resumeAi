@@ -59,32 +59,31 @@ h3 {
 }
 
 @keyframes floatOrb {
-
   0%,
   100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 
   33% {
-    transform: translate(30px, -40px) scale(1.08);
+    transform: translate3d(30px, -40px, 0) scale(1.08);
   }
 
   66% {
-    transform: translate(-20px, 25px) scale(0.95);
+    transform: translate3d(-20px, 25px, 0) scale(0.95);
   }
 }
 
 @keyframes drift {
   0% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 
   50% {
-    transform: translate(300px, 150px) scale(1.2);
+    transform: translate3d(200px, 100px, 0) scale(1.15);
   }
 
   100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
@@ -98,7 +97,10 @@ h3 {
   pointer-events: none;
   z-index: 0;
   opacity: 0.25;
-  /* Increased for better visibility */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .orb-1 {
@@ -107,8 +109,7 @@ h3 {
   background: radial-gradient(circle, #6366f1, transparent 70%);
   top: -10%;
   left: -10%;
-  animation: drift 15s ease-in-out infinite;
-  /* Speed up */
+  animation: drift 45s ease-in-out infinite;
 }
 
 .orb-2 {
@@ -117,8 +118,7 @@ h3 {
   background: radial-gradient(circle, #a78bfa, transparent 70%);
   bottom: -10%;
   right: -10%;
-  animation: drift 18s ease-in-out infinite reverse;
-  /* Speed up */
+  animation: drift 52s ease-in-out infinite reverse;
 }
 
 .orb-3 {
@@ -127,8 +127,7 @@ h3 {
   background: radial-gradient(circle, #22d3ee, transparent 70%);
   top: 40%;
   left: 30%;
-  animation: floatOrb 12s ease-in-out infinite;
-  /* Speed up */
+  animation: floatOrb 35s ease-in-out infinite;
 }
 
 .orb-4 {
@@ -137,8 +136,7 @@ h3 {
   background: radial-gradient(circle, #f472b6, transparent 70%);
   bottom: 20%;
   left: 10%;
-  animation: floatOrb 14s ease-in-out infinite reverse;
-  /* Speed up */
+  animation: floatOrb 40s ease-in-out infinite reverse;
 }
 
 @keyframes cardEnter {
@@ -1663,9 +1661,21 @@ h3 {
 }
 
 @media (max-width: 768px) {
+  .orb-1,
+  .orb-2,
+  .orb-3,
+  .orb-4 {
+    animation: none !important;
+    transform: translate3d(0, 0, 0) !important;
+  }
+
   .glass {
     padding: 20px;
     width: 95%;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    background: rgba(10, 14, 26, 0.85) !important;
+    border-radius: var(--radius-md);
   }
 
   .hero-main h1 {
@@ -1676,23 +1686,62 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .role-input,
+  .jd-input {
+    font-size: 16px !important;
+    padding: 12px 14px !important;
+  }
+
   .wizard-steps {
-    gap: 8px;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 340px;
+    margin: 0 auto 32px;
+    gap: 0 !important;
+  }
+
+  .wizard-steps::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    right: 15px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    z-index: 0;
+    transform: translateY(-50%);
   }
 
   .w-step {
-    padding: 6px 10px;
-    font-size: 12px;
+    position: relative;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+    font-size: 13px !important;
+    aspect-ratio: 1;
+    flex-shrink: 0;
+  }
+
+  .step-num {
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important;
+    font-size: 13px !important;
   }
 
   .step-label {
-    display: none;
-    /* Only show numbers on very small screens to prevent overflow */
+    display: none !important;
   }
 
   .w-step.active .step-label {
-    display: inline;
-    /* Show label for active step on mobile */
+    display: none !important;
   }
 
   .results-grid {

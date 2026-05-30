@@ -33,6 +33,30 @@ export default function App() {
   const [website, setWebsite] = useState("");
   const [projects, setProjects] = useState([{ id: Date.now() + 2, name: "", tech: "", description: "" }]);
   const [parsing, setParsing] = useState(false);
+  const [templateStyle, setTemplateStyle] = useState("classic");
+
+  /* --- template detection based on job type --- */
+  const detectTemplate = (jd = "", skillsText = "") => {
+    const text = `${jd} ${skillsText}`.toLowerCase();
+
+    const techKeywords = ['software', 'engineer', 'developer', 'frontend', 'backend', 'fullstack', 'full-stack', 'devops', 'data scientist', 'data engineer', 'machine learning', 'ml ', 'ai ', 'python', 'javascript', 'react', 'node', 'aws', 'cloud', 'kubernetes', 'docker', 'api', 'database', 'sql', 'programming', 'code', 'github', 'agile', 'scrum', 'sre', 'infrastructure', 'cybersecurity', 'security engineer', 'ios', 'android', 'mobile developer', 'qa engineer', 'test automation'];
+    const executiveKeywords = ['sales', 'business development', 'account executive', 'vp ', 'vice president', 'director', 'chief', 'ceo', 'cfo', 'coo', 'cto', 'revenue', 'p&l', 'profit', 'portfolio', 'client relations', 'enterprise', 'b2b', 'quota', 'pipeline', 'territory', 'finance', 'investment', 'banking', 'wealth', 'fund', 'equity', 'mergers', 'acquisition', 'management', 'operations', 'strategy', 'executive'];
+    const creativeKeywords = ['marketing', 'brand', 'content', 'social media', 'seo', 'sem', 'copywriter', 'copywriting', 'creative', 'design', 'graphic', 'ux', 'ui ', 'user experience', 'user interface', 'art director', 'photographer', 'videographer', 'media', 'public relations', 'pr ', 'communications', 'advertising', 'campaign', 'influencer', 'digital marketing', 'growth', 'community manager'];
+    const minimalKeywords = ['consultant', 'consulting', 'legal', 'attorney', 'lawyer', 'paralegal', 'academic', 'professor', 'researcher', 'phd', 'postdoc', 'lecturer', 'analyst', 'policy', 'compliance', 'audit', 'regulatory', 'governance', 'risk', 'actuary', 'accountant', 'cpa', 'tax'];
+
+    const countMatches = (keywords) => keywords.filter(kw => text.includes(kw)).length;
+
+    const scores = {
+      tech: countMatches(techKeywords),
+      executive: countMatches(executiveKeywords),
+      creative: countMatches(creativeKeywords),
+      minimal: countMatches(minimalKeywords),
+    };
+
+    const best = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+    if (best[1] >= 2) return best[0];
+    return "classic";
+  };
 
 
 
@@ -103,6 +127,7 @@ export default function App() {
     setExperiences([{ id: Date.now(), company: "", title: "", dates: "", description: "" }]);
     setEducations([{ id: Date.now() + 1, school: "", degree: "", dates: "", description: "" }]);
     setProjects([{ id: Date.now() + 2, name: "", tech: "", description: "" }]);
+    setTemplateStyle("classic");
   };
 
   const addEducation = () => setEducations([{ id: Date.now(), school: "", degree: "", dates: "", description: "" }, ...educations]);
@@ -246,6 +271,11 @@ export default function App() {
         result.skills = result.skills.slice(0, 10);
       }
 
+      // Auto-detect template style based on job description + skills
+      const detectedStyle = detectTemplate(jobDescription, skills);
+      setTemplateStyle(detectedStyle);
+      console.log(`🎨 Template detected: ${detectedStyle}`);
+
       setData(result);
     } catch (err) {
       console.error("❌ ERROR:", err.message);
@@ -259,6 +289,9 @@ export default function App() {
   const handlePrint = () => {
     const printEl = document.querySelector('.resume-template.printing') || document.querySelector('.analyzer-print-template.printing');
     if (!printEl) { window.print(); return; }
+
+    // Detect which template class is on the element
+    const templateClass = ['tech-template', 'executive-template', 'creative-template', 'minimal-template'].find(cls => printEl.classList.contains(cls)) || '';
 
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
@@ -279,7 +312,7 @@ export default function App() {
 
 @page {
   size: A4;
-  margin: 0; /* Kills default browser headers and footers completely */
+  margin: 0;
 }
 
 *, *::before, *::after {
@@ -299,7 +332,6 @@ html, body {
   print-color-adjust: exact;
 }
 
-/* Hack to create margins on every page without triggering browser headers */
 .print-table {
   width: 100%;
   border-collapse: collapse;
@@ -312,16 +344,19 @@ html, body {
 }
 
 .page-header-space {
-  height: 0.6in; /* Top margin for every page */
+  height: 0.6in;
 }
 
 .page-footer-space {
-  height: 0.6in; /* Bottom margin for every page */
+  height: 0.6in;
 }
 
 .resume-content {
   width: 100%;
-  padding: 0 0.7in; /* Left/Right margin for every page */
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 0.7in;
+  box-sizing: border-box;
 }
 
 /* ===== HEADER ===== */
@@ -362,8 +397,10 @@ html, body {
 /* ===== SECTIONS ===== */
 .resume-section {
   margin-top: 12pt;
+  break-inside: auto;
 }
 
+/* PAGE-BREAK ORPHAN FIX */
 .resume-section h2 {
   font-family: 'Outfit', 'Inter', sans-serif;
   font-size: 11pt;
@@ -374,11 +411,22 @@ html, body {
   border-bottom: 1.5px solid #000;
   padding-bottom: 2pt;
   margin-bottom: 8pt;
-  page-break-after: avoid;
-  break-after: avoid;
+  break-after: avoid !important;
+  page-break-after: avoid !important;
 }
 
-/* Summary */
+.section-keep-together {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.resume-section h2 + .job,
+.resume-section h2 + .summary-text,
+.resume-section h2 + .skills-grid {
+  break-before: avoid !important;
+  page-break-before: avoid !important;
+}
+
 .resume-section > p.summary-text {
   font-size: 10pt;
   line-height: 1.45;
@@ -394,10 +442,10 @@ html, body {
 }
 
 .job-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12pt;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  max-width: 100%;
   margin-bottom: 3pt;
   page-break-inside: avoid;
   break-inside: avoid;
@@ -406,23 +454,30 @@ html, body {
 }
 
 .job-title {
+  display: table-cell;
   font-size: 10.5pt;
   font-weight: 700;
   color: #000;
-  flex: 1;
   line-height: 1.25;
+  vertical-align: top;
+  text-align: left;
+  padding-right: 15pt;
+  overflow: hidden;
+  word-break: break-word;
 }
 
 .job-dates {
+  display: table-cell;
   font-size: 9.5pt;
   font-weight: 600;
   color: #444;
   white-space: nowrap;
   text-align: right;
-  flex-shrink: 0;
+  vertical-align: top;
+  width: 130px;
+  min-width: 100px;
 }
 
-/* Bullet points */
 .job ul {
   margin: 2pt 0 0 0;
   padding-left: 16pt;
@@ -441,7 +496,6 @@ html, body {
   color: #555;
 }
 
-/* Education details */
 .edu-details {
   font-size: 9.5pt;
   font-style: italic;
@@ -463,10 +517,18 @@ html, body {
   font-size: 10pt;
   color: #222;
   line-height: 1.5;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .skill-chip {
   display: inline;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .skill-chip::after {
@@ -477,6 +539,155 @@ html, body {
 .skill-chip:last-child::after {
   content: "";
 }
+
+/* ===== TEMPLATE: TECH ===== */
+.tech-template .resume-header {
+  text-align: left;
+  border-bottom: 3px solid #2563eb;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+.tech-template .resume-header h1 {
+  color: #1e3a5f;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0;
+  font-size: 22pt;
+  text-transform: none;
+}
+.tech-template .resume-section h2 {
+  color: #2563eb;
+  border-bottom: 2px solid #2563eb;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+  font-size: 10.5pt;
+}
+.tech-template .skill-chip {
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 2pt 6pt;
+  border-radius: 3pt;
+  margin-right: 4pt;
+  margin-bottom: 4pt;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 9pt;
+  display: inline-block;
+  border: 0.5pt solid #bfdbfe;
+}
+.tech-template .skill-chip::after { content: ""; }
+.tech-template .skills-grid { gap: 4pt; }
+.tech-template .job-title { color: #1e3a5f; }
+
+/* ===== TEMPLATE: EXECUTIVE ===== */
+.executive-template .resume-header {
+  text-align: center;
+  border-bottom: 3px double #1a365d;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+}
+.executive-template .resume-header h1 {
+  color: #1a365d;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 24pt;
+  letter-spacing: 3px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.executive-template .contact-line {
+  font-size: 9.5pt;
+  letter-spacing: 1px;
+  color: #4a5568;
+}
+.executive-template .resume-section h2 {
+  color: #1a365d;
+  border-bottom: 1.5px solid #c6963c;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  letter-spacing: 2px;
+  font-size: 10.5pt;
+  padding-bottom: 4px;
+}
+.executive-template .job-title { color: #1a365d; font-size: 10.5pt; }
+.executive-template .job-dates { color: #744210; font-weight: 600; }
+
+/* ===== TEMPLATE: CREATIVE ===== */
+.creative-template .resume-content {
+  border-left: 6px solid #7c3aed;
+  padding-left: 0.9in;
+}
+.creative-template .resume-header {
+  text-align: left;
+  border-bottom: none;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+}
+.creative-template .resume-header h1 {
+  color: #7c3aed;
+  font-family: 'Outfit', sans-serif;
+  font-size: 22pt;
+  text-transform: none;
+  letter-spacing: -0.5px;
+  font-weight: 800;
+}
+.creative-template .resume-section h2 {
+  color: #7c3aed;
+  border-bottom: 2px solid #c4b5fd;
+  font-family: 'Outfit', sans-serif;
+  font-size: 10.5pt;
+  letter-spacing: 1.5px;
+}
+.creative-template .job-title { color: #5b21b6; }
+.creative-template .skill-chip {
+  background: #f5f3ff;
+  color: #6d28d9;
+  padding: 2pt 8pt;
+  border-radius: 12pt;
+  margin-right: 4pt;
+  margin-bottom: 4pt;
+  font-size: 9pt;
+  display: inline-block;
+  border: 0.5pt solid #ddd6fe;
+}
+.creative-template .skill-chip::after { content: ""; }
+.creative-template .skills-grid { gap: 4pt; }
+.creative-template .summary-text {
+  border-left: 3px solid #c4b5fd;
+  padding-left: 10pt;
+  font-style: italic;
+}
+
+/* ===== TEMPLATE: MINIMAL ===== */
+.minimal-template .resume-content {
+  padding: 0 0.85in;
+}
+.minimal-template .resume-header {
+  text-align: left;
+  border-bottom: 0.5px solid #d1d5db;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.minimal-template .resume-header h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 20pt;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #111;
+}
+.minimal-template .contact-line { color: #6b7280; font-size: 9pt; }
+.minimal-template .resume-section { margin-top: 14pt; }
+.minimal-template .resume-section h2 {
+  color: #374151;
+  border-bottom: 0.5px solid #e5e7eb;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 9.5pt;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding-bottom: 4px;
+}
+.minimal-template .job-header { border-bottom: none; }
+.minimal-template .job-title { font-weight: 600; color: #111; font-size: 10pt; }
+.minimal-template .job-dates { color: #9ca3af; font-size: 9pt; }
+.minimal-template .summary-text { font-size: 9.5pt; color: #4b5563; line-height: 1.6; }
 
 /* ===== ANALYZER PRINT ===== */
 .analyzer-content {
@@ -541,7 +752,7 @@ html, body {
 </style>
 </head>
 <body>
-  <table class="print-table">
+  <table class="print-table ${templateClass}">
     <thead>
       <tr><td><div class="page-header-space"></div></td></tr>
     </thead>
@@ -957,7 +1168,10 @@ html, body {
                     <h4 style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "16px", marginBottom: "8px" }}>Other detected skills:</h4>
                     <div className="skills neutral">
                       {Array.isArray(data.skills) && data.skills.length > 0
-                        ? data.skills.map((s, i) => typeof s === "string" && s.length < 25 ? <span key={i}>{s}</span> : null)
+                        ? data.skills.map((s, i) => {
+                            const text = typeof s === "object" ? s.category : s;
+                            return typeof text === "string" && text.length < 25 ? <span key={i}>{text}</span> : null;
+                          })
                         : <span style={{ background: "transparent", border: "none", padding: 0 }}>None</span>}
                     </div>
                   </div>
@@ -1016,7 +1230,7 @@ html, body {
             <div className="print-skills">
               <p><strong>✅ Matched Keywords:</strong> {data.matched_keywords?.join(", ") || "None"}</p>
               <p><strong>⚠️ Missing Keywords:</strong> {data.missing_keywords?.join(", ") || "None"}</p>
-              <p><strong>ℹ️ Other Detected Skills:</strong> {data.skills?.join(", ") || "None"}</p>
+              <p><strong>ℹ️ Other Detected Skills:</strong> {data.skills ? data.skills.map(s => typeof s === "object" ? s.category : s).join(", ") : "None"}</p>
             </div>
 
             {data.improve?.length > 0 && (
@@ -1064,7 +1278,7 @@ html, body {
             </div>
 
             {/* The actual printable template (hidden via CSS until printed) */}
-            <div className="resume-template printing">
+            <div className={`resume-template printing ${templateStyle}-template`}>
               <div className="resume-content">
                 <div className="resume-header">
                   <h1>{name || "Your Name"}</h1>
@@ -1150,9 +1364,19 @@ html, body {
                   <div className="resume-section skills-section-print">
                     <h2>Skills & Expertise</h2>
                     <div className="skills-grid">
-                      {data.skills.map((s, i) => (
-                        <div key={i} className="skill-chip">{s}</div>
-                      ))}
+                      {data.skills.map((s, i) => {
+                        if (typeof s === "object" && s.category) {
+                          return (
+                            <div key={i} style={{ width: "100%", marginBottom: "4px" }}>
+                              <span style={{ fontWeight: 600, marginRight: "6px" }}>{s.category}:</span>
+                              {s.items && s.items.map((item, j) => (
+                                <div key={j} className="skill-chip">{item}</div>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return <div key={i} className="skill-chip">{s}</div>;
+                      })}
                     </div>
                   </div>
                 )}

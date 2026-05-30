@@ -227,7 +227,7 @@ LinkedIn: ${linkedin || ""}
 Website: ${website || ""}
 Target Job Description: ${jobDescription || ""}
 
-Experiences:
+    Experiences:
 ${JSON.stringify(experiences || [], null, 2)}
 
 Educations:
@@ -240,11 +240,13 @@ Skills:
 ${Array.isArray(skills) ? skills.join(", ") : (skills || "")}
 
 DIRECTIVES:
-1. QUANTIFY IMPACT: Every single experience and project bullet point MUST include a metric (%, $, #). If there isn't one in the input, estimate a highly realistic, impressive business metric based on the context. Never leave a bullet without numbers.
-2. STAR METHOD: Focus bullets on Situation/Task, Action, and measurable Result.
-3. KEYWORDS: Integrate crucial keywords from the target job description if provided.
-4. NO PLACEHOLDERS: Generate complete, professional bullet points.
-5. Return ONLY valid JSON matching the schema below.
+1. ACCURATE EXPERIENCE & PLAUSIBLE METRICS: Base all experience and project bullets on the user's input. You MUST add at least one highly generic, plausible metric (%, $, #) to EVERY bullet point to maximize the ATS score. However, ensure it is a common baseline metric for the role (e.g., "improved efficiency by 15%", "collaborated with 5+ cross-functional team members") and do NOT fabricate highly specific or improbable data. Do NOT invent new job titles, companies, or entirely fake duties.
+2. STRICT EDUCATION RULE: DO NOT invent, hallucinate, or estimate any details, GPA, honors, or awards for the Education section. ONLY use the exact information provided in the input.
+3. STAR METHOD: Focus bullets on Situation/Task, Action, and measurable Result.
+4. KEYWORDS: Integrate crucial keywords from the target job description if provided.
+5. SKILLS CATEGORIZATION: Group skills into logical categories (e.g., "Programming Languages", "Frameworks & Libraries", "Tools & Platforms", "Core Competencies").
+6. NO PLACEHOLDERS: Generate complete, professional bullet points.
+7. Return ONLY valid JSON matching the schema below.
 
 JSON SCHEMA:
 {
@@ -262,7 +264,7 @@ JSON SCHEMA:
       "degree": "Degree",
       "school": "School Name",
       "dates": "Dates",
-      "details": "GPA/Awards/etc"
+      "details": "Only include details if provided in the input"
     }
   ],
   "projects": [
@@ -272,7 +274,12 @@ JSON SCHEMA:
       "bullets": ["What you built + metrics/results", "..."]
     }
   ],
-  "skills": ["Skill1", "Skill2"]
+  "skills": [
+    {
+      "category": "Category Name (e.g., Programming Languages)",
+      "items": ["Skill1", "Skill2"]
+    }
+  ]
 }
 `;
 }
@@ -353,7 +360,15 @@ function sanitizeGenerated(parsed = {}) {
 
   let normalizedSkills = [];
   if (Array.isArray(parsed.skills)) {
-    normalizedSkills = parsed.skills.map(s => cleanText(String(s)));
+    // Check if it's categorized skills array or just strings
+    if (parsed.skills.length > 0 && typeof parsed.skills[0] === 'object' && parsed.skills[0].category) {
+      normalizedSkills = parsed.skills.map(s => ({
+        category: cleanText(s.category || ""),
+        items: Array.isArray(s.items) ? s.items.map(i => cleanText(String(i))) : []
+      }));
+    } else {
+      normalizedSkills = parsed.skills.map(s => cleanText(String(s)));
+    }
   } else if (typeof parsed.skills === "string") {
     normalizedSkills = parsed.skills.split(",").map(s => cleanText(s));
   }

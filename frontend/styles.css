@@ -1314,6 +1314,25 @@ h3 {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .orb-1,
+  .orb-2,
+  .orb-3,
+  .orb-4,
+  .progress-bar-fill::after {
+    animation: none !important;
+  }
+}
+
 /* ===== RESUME TEMPLATE (PRINT ONLY) ===== */
 .resume-template {
   display: none;
@@ -1384,8 +1403,8 @@ h3 {
 
 /* Keep heading glued to first content block */
 .section-keep-together {
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
 }
 
 .resume-section h2 + .job,
@@ -1397,12 +1416,12 @@ h3 {
 
 /* --- Skills overflow fix --- */
 .skills-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: block;
   overflow: hidden;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  line-height: 1.32;
 }
 
 .skill-chip {
@@ -1411,6 +1430,15 @@ h3 {
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
+}
+
+.skill-category {
+  display: block;
+  width: 100%;
+  margin-bottom: 2pt;
+  line-height: 1.32;
+  break-inside: auto;
+  page-break-inside: auto;
 }
 
 .hidden-screen {
@@ -1497,6 +1525,10 @@ h3 {
     box-sizing: border-box;
   }
 
+  .fit-one-page .resume-content {
+    zoom: var(--fit-zoom, 1);
+  }
+
   .resume-header {
     text-align: center;
     margin-bottom: 20px;
@@ -1542,8 +1574,8 @@ h3 {
   }
 
   .section-keep-together {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
 
   .resume-section h2 + .job,
@@ -1559,11 +1591,11 @@ h3 {
     line-height: 1.35;
   }
 
-  /* Jobs - allow page breaks BETWEEN jobs but not INSIDE a single job */
+  /* Jobs can flow across pages; the title/date row stays together. */
   .job {
     margin-bottom: 12pt;
-    page-break-inside: avoid;
-    break-inside: avoid;
+    page-break-inside: auto;
+    break-inside: auto;
   }
 
   .job-header {
@@ -1619,20 +1651,18 @@ h3 {
     break-inside: avoid;
   }
 
-  /* SKILLS - overflow + page break fix */
+  /* Skills can flow across pages instead of forcing a large blank gap. */
   .skills-section-print {
-    page-break-inside: avoid;
-    break-inside: avoid;
+    page-break-inside: auto;
+    break-inside: auto;
   }
 
   .skills-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4pt 0;
-    margin-top: 4pt;
+    display: block;
+    margin-top: 2pt;
     font-size: 10pt;
     color: #222;
-    line-height: 1.5;
+    line-height: 1.32;
     overflow: hidden;
     width: 100%;
     max-width: 100%;
@@ -1654,6 +1684,15 @@ h3 {
 
   .skill-chip:last-child::after {
     content: "";
+  }
+
+  .skill-category {
+    display: block;
+    width: 100%;
+    margin-bottom: 2pt;
+    line-height: 1.32;
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
   /* =============================================
@@ -2106,8 +2145,13 @@ h3 {
   .orb-2,
   .orb-3,
   .orb-4 {
+    display: none !important;
     animation: none !important;
     transform: translate3d(0, 0, 0) !important;
+  }
+
+  .app {
+    padding: 16px 8px 28px;
   }
 
   .glass {
@@ -2118,6 +2162,47 @@ h3 {
     -webkit-backdrop-filter: none !important;
     background: rgba(10, 14, 26, 0.95) !important;
     border-radius: var(--radius-md);
+  }
+
+  .gradient-text {
+    animation: none !important;
+    background-size: 100% 100%;
+  }
+
+  .fade-in,
+  [class*="stagger-"] {
+    animation-duration: 0.22s !important;
+    animation-delay: 0s !important;
+  }
+
+  .form-card,
+  .form-card:hover,
+  .section,
+  .summary,
+  .skills-section,
+  .keyword-chip,
+  .btn,
+  .w-step.active {
+    box-shadow: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .form-card,
+  .btn,
+  .tab-btn,
+  .w-step,
+  .mode-btn {
+    transition-duration: 0.16s !important;
+  }
+
+  .progress-bar-fill::after {
+    animation: none !important;
+  }
+
+  .gauge-fill {
+    filter: none !important;
+    transition-duration: 0.45s;
   }
 
   .hero-main h1 {
@@ -2139,51 +2224,104 @@ h3 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 340px;
-    margin: 0 auto 32px;
+    max-width: 360px;
+    min-height: 46px;
+    margin: 0 auto 28px;
+    padding: 0 14px;
     gap: 0 !important;
+    flex-wrap: nowrap;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(129, 140, 248, 0.18);
+    border-radius: 999px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .wizard-steps::before {
     content: "";
     position: absolute;
     top: 50%;
-    left: 15px;
-    right: 15px;
-    height: 2px;
+    left: 26px;
+    right: 26px;
+    height: 1px;
     background: rgba(255, 255, 255, 0.08);
     z-index: 0;
     transform: translateY(-50%);
   }
 
+  .wizard-steps::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 26px;
+    width: calc((100% - 52px) * var(--wizard-progress, 0) / 100);
+    height: 2px;
+    background: linear-gradient(90deg, var(--indigo), var(--accent-bright));
+    border-radius: 999px;
+    z-index: 0;
+    transform: translateY(-50%);
+    transition: width 0.25s ease;
+  }
+
   .w-step {
     position: relative;
     z-index: 1;
-    width: 36px;
-    height: 36px;
+    width: 24px;
+    height: 24px;
     padding: 0 !important;
     display: flex !important;
     align-items: center;
     justify-content: center;
     border-radius: 50% !important;
-    font-size: 13px !important;
+    font-size: 11px !important;
     aspect-ratio: 1;
     flex-shrink: 0;
+    background: #111827;
+    border-color: rgba(129, 140, 248, 0.28);
+    box-shadow: none;
+    transition: width 0.25s ease, background 0.25s ease, color 0.25s ease;
   }
 
   .step-num {
     width: auto !important;
     height: auto !important;
     background: transparent !important;
-    font-size: 13px !important;
+    font-size: 11px !important;
+    font-weight: 700;
   }
 
   .step-label {
     display: none !important;
   }
 
+  .w-step.completed {
+    background: rgba(129, 140, 248, 0.22);
+    border-color: rgba(129, 140, 248, 0.55);
+    color: var(--text-primary);
+  }
+
+  .w-step.active {
+    width: auto;
+    min-width: 112px;
+    height: 30px;
+    padding: 0 12px !important;
+    gap: 6px;
+    border-radius: 999px !important;
+    transform: none;
+    box-shadow: none;
+  }
+
   .w-step.active .step-label {
-    display: none !important;
+    display: inline !important;
+    max-width: none;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+
+  .remove-btn {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   .results-grid {

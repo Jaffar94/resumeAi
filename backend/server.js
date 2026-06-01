@@ -240,7 +240,7 @@ Skills:
 ${Array.isArray(skills) ? skills.join(", ") : (skills || "")}
 
 DIRECTIVES:
-1. ACCURATE EXPERIENCE & PLAUSIBLE METRICS: Base all experience and project bullets on the user's input. You MUST add at least one highly generic, plausible metric (%, $, #) to EVERY bullet point to maximize the ATS score. However, ensure it is a common baseline metric for the role (e.g., "improved efficiency by 15%", "collaborated with 5+ cross-functional team members") and do NOT fabricate highly specific or improbable data. Do NOT invent new job titles, companies, or entirely fake duties.
+1. ACCURATE EXPERIENCE & PLAUSIBLE METRICS: Base all experience and project bullets on the user's input. You MUST add at least one highly generic, plausible metric (%, $, #) to EVERY bullet point to maximize the ATS score. However, ensure it is a common baseline metric for the role (e.g., "improved efficiency by 15%", "collaborated with 5+ cross-functional team members") and do NOT fabricate highly specific or improbable data. Do NOT invent new job titles, companies, or entirely fake duties,try to include things user has shown in his experience IF it looks good enough AND don't invent. Make best according to best ATS Score.
 2. STRICT EDUCATION RULE: DO NOT invent, hallucinate, or estimate any details, GPA, honors, or awards for the Education section. ONLY use the exact information provided in the input.
 3. STAR METHOD: Focus bullets on Situation/Task, Action, and measurable Result.
 4. KEYWORDS: Integrate crucial keywords from the target job description if provided.

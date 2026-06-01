@@ -2,6 +2,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import "./styles.css";
 
 const CIRCUMFERENCE = 2 * Math.PI * 66;
+const createId = () => {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
+const createExperience = () => ({ id: createId(), company: "", title: "", dates: "", description: "" });
+const createEducation = () => ({ id: createId(), school: "", degree: "", dates: "", description: "" });
+const createProject = () => ({ id: createId(), name: "", tech: "", description: "" });
 
 export default function App() {
   const [file, setFile] = useState(null);
@@ -24,14 +32,14 @@ export default function App() {
 
   // New Structured Builder State
   const [formStep, setFormStep] = useState(1);
-  const [experiences, setExperiences] = useState([{ id: Date.now(), company: "", title: "", dates: "", description: "" }]);
-  const [educations, setEducations] = useState([{ id: Date.now() + 1, school: "", degree: "", dates: "", description: "" }]);
+  const [experiences, setExperiences] = useState(() => [createExperience()]);
+  const [educations, setEducations] = useState(() => [createEducation()]);
   const [skills, setSkills] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [website, setWebsite] = useState("");
-  const [projects, setProjects] = useState([{ id: Date.now() + 2, name: "", tech: "", description: "" }]);
+  const [projects, setProjects] = useState(() => [createProject()]);
   const [parsing, setParsing] = useState(false);
   const [templateStyle, setTemplateStyle] = useState("classic");
 
@@ -98,12 +106,12 @@ export default function App() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   /* --- builder helpers --- */
-  const addExperience = () => setExperiences([{ id: Date.now(), company: "", title: "", dates: "", description: "" }, ...experiences]);
+  const addExperience = () => setExperiences(prev => [createExperience(), ...prev]);
   const updateExperience = (id, field, val) => {
-    setExperiences(experiences.map(exp => exp.id === id ? { ...exp, [field]: val } : exp));
+    setExperiences(prev => prev.map(exp => exp.id === id ? { ...exp, [field]: val } : exp));
   };
   const removeExperience = (id) => {
-    setExperiences(experiences.map(exp => exp.id === id ? { ...exp, isRemoving: true } : exp));
+    setExperiences(prev => prev.map(exp => exp.id === id ? { ...exp, isRemoving: true } : exp));
     setTimeout(() => {
       setExperiences(prev => prev.filter(exp => exp.id !== id));
     }, 400);
@@ -124,29 +132,29 @@ export default function App() {
     setLinkedin("");
     setWebsite("");
     setSkills("");
-    setExperiences([{ id: Date.now(), company: "", title: "", dates: "", description: "" }]);
-    setEducations([{ id: Date.now() + 1, school: "", degree: "", dates: "", description: "" }]);
-    setProjects([{ id: Date.now() + 2, name: "", tech: "", description: "" }]);
+    setExperiences([createExperience()]);
+    setEducations([createEducation()]);
+    setProjects([createProject()]);
     setTemplateStyle("classic");
   };
 
-  const addEducation = () => setEducations([{ id: Date.now(), school: "", degree: "", dates: "", description: "" }, ...educations]);
+  const addEducation = () => setEducations(prev => [createEducation(), ...prev]);
   const updateEducation = (id, field, val) => {
-    setEducations(educations.map(edu => edu.id === id ? { ...edu, [field]: val } : edu));
+    setEducations(prev => prev.map(edu => edu.id === id ? { ...edu, [field]: val } : edu));
   };
   const removeEducation = (id) => {
-    setEducations(educations.map(edu => edu.id === id ? { ...edu, isRemoving: true } : edu));
+    setEducations(prev => prev.map(edu => edu.id === id ? { ...edu, isRemoving: true } : edu));
     setTimeout(() => {
       setEducations(prev => prev.filter(edu => edu.id !== id));
     }, 400);
   };
 
-  const addProject = () => setProjects([{ id: Date.now(), name: "", tech: "", description: "" }, ...projects]);
+  const addProject = () => setProjects(prev => [createProject(), ...prev]);
   const updateProject = (id, field, val) => {
-    setProjects(projects.map(p => p.id === id ? { ...p, [field]: val } : p));
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, [field]: val } : p));
   };
   const removeProject = (id) => {
-    setProjects(projects.map(p => p.id === id ? { ...p, isRemoving: true } : p));
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, isRemoving: true } : p));
     setTimeout(() => {
       setProjects(prev => prev.filter(p => p.id !== id));
     }, 400);
@@ -173,9 +181,9 @@ export default function App() {
       if (result.location) setLocation(result.location);
       if (result.linkedin) setLinkedin(result.linkedin);
       if (result.website) setWebsite(result.website);
-      if (Array.isArray(result.experiences)) setExperiences(result.experiences.map(e => ({ ...e, id: Math.random() })));
-      if (Array.isArray(result.educations)) setEducations(result.educations.map(e => ({ ...e, id: Math.random() })));
-      if (Array.isArray(result.projects)) setProjects(result.projects.map(p => ({ ...p, id: Math.random() })));
+      if (Array.isArray(result.experiences)) setExperiences(result.experiences.map(e => ({ ...e, id: createId() })));
+      if (Array.isArray(result.educations)) setEducations(result.educations.map(e => ({ ...e, id: createId() })));
+      if (Array.isArray(result.projects)) setProjects(result.projects.map(p => ({ ...p, id: createId() })));
       if (result.skills) setSkills(result.skills);
 
     } catch (err) {
@@ -344,11 +352,11 @@ html, body {
 }
 
 .page-header-space {
-  height: 0.6in;
+  height: 0.35in;
 }
 
 .page-footer-space {
-  height: 0.6in;
+  height: 0.35in;
 }
 
 .resume-content {
@@ -357,6 +365,10 @@ html, body {
   overflow: hidden;
   padding: 0 0.7in;
   box-sizing: border-box;
+}
+
+.fit-one-page .resume-content {
+  zoom: var(--fit-zoom, 1);
 }
 
 /* ===== HEADER ===== */
@@ -416,8 +428,8 @@ html, body {
 }
 
 .section-keep-together {
-  break-inside: avoid !important;
-  page-break-inside: avoid !important;
+  break-inside: auto !important;
+  page-break-inside: auto !important;
 }
 
 .resume-section h2 + .job,
@@ -437,8 +449,8 @@ html, body {
 /* ===== JOB / ENTRY BLOCK ===== */
 .job {
   margin-bottom: 10pt;
-  page-break-inside: avoid;
-  break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
 .job-header {
@@ -505,18 +517,16 @@ html, body {
 
 /* ===== SKILLS ===== */
 .skills-section-print {
-  page-break-inside: avoid;
-  break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
 .skills-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4pt 0;
-  margin-top: 4pt;
+  display: block;
+  margin-top: 2pt;
   font-size: 10pt;
   color: #222;
-  line-height: 1.5;
+  line-height: 1.32;
   overflow: hidden;
   width: 100%;
   max-width: 100%;
@@ -538,6 +548,15 @@ html, body {
 
 .skill-chip:last-child::after {
   content: "";
+}
+
+.skill-category {
+  display: block;
+  width: 100%;
+  margin-bottom: 2pt;
+  line-height: 1.32;
+  break-inside: auto;
+  page-break-inside: auto;
 }
 
 /* ===== TEMPLATE: TECH ===== */
@@ -769,10 +788,47 @@ html, body {
 </html>`);
     doc.close();
 
-    iframe.contentWindow.focus();
-    setTimeout(() => {
+    const waitForPrintLayout = async () => {
+      if (doc.fonts?.ready) {
+        try {
+          await doc.fonts.ready;
+        } catch {
+          // Continue with fallback fonts if web fonts fail to load.
+        }
+      }
+
+      await new Promise(resolve => iframe.contentWindow.requestAnimationFrame(resolve));
+      await new Promise(resolve => iframe.contentWindow.requestAnimationFrame(resolve));
+
+      const table = doc.querySelector('.print-table');
+      const resumeContent = doc.querySelector('.resume-content');
+      const pageHeight = iframe.getBoundingClientRect().height || 1122;
+      const contentHeight = table?.scrollHeight || doc.documentElement.scrollHeight;
+      const headerFooterHeight =
+        (doc.querySelector('.page-header-space')?.offsetHeight || 0) +
+        (doc.querySelector('.page-footer-space')?.offsetHeight || 0);
+
+      if (resumeContent && contentHeight > pageHeight && contentHeight <= pageHeight * 1.06) {
+        const availableContentHeight = pageHeight - headerFooterHeight;
+        const currentContentHeight = Math.max(1, contentHeight - headerFooterHeight);
+        const zoom = Math.max(0.965, Math.min(0.995, availableContentHeight / currentContentHeight - 0.004));
+        doc.body.style.setProperty('--fit-zoom', String(zoom));
+        doc.body.classList.add('fit-one-page');
+      }
+
+      await new Promise(resolve => iframe.contentWindow.requestAnimationFrame(resolve));
+    };
+
+    setTimeout(async () => {
+      await waitForPrintLayout();
+      const cleanup = () => {
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      };
+
+      iframe.contentWindow.addEventListener("afterprint", cleanup, { once: true });
+      iframe.contentWindow.focus();
       iframe.contentWindow.print();
-      setTimeout(() => document.body.removeChild(iframe), 1000);
+      setTimeout(cleanup, 3000);
     }, 500);
   };
 
@@ -840,7 +896,7 @@ html, body {
             ) : (
               <div className="builder-wizard fade-in">
                 {/* Step Indicator */}
-                <div className="wizard-steps">
+                <div className="wizard-steps" style={{ "--wizard-progress": `${((formStep - 1) / 4) * 100}%` }}>
                   {[
                     { s: 1, label: "Profile" },
                     { s: 2, label: "Experience" },
@@ -1367,7 +1423,7 @@ html, body {
                       {data.skills.map((s, i) => {
                         if (typeof s === "object" && s.category) {
                           return (
-                            <div key={i} style={{ width: "100%", marginBottom: "4px" }}>
+                            <div key={i} className="skill-category">
                               <span style={{ fontWeight: 600, marginRight: "6px" }}>{s.category}:</span>
                               {s.items && s.items.map((item, j) => (
                                 <div key={j} className="skill-chip">{item}</div>

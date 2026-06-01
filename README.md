@@ -34,7 +34,7 @@ ResumeAI helps users upload an existing resume, analyze it against a target role
 ## Project Structure
 
 ```text
-final_resume_ai/
+resume_ai/
 ├── backend/
 │   ├── server.js
 │   ├── package.json
@@ -53,8 +53,8 @@ final_resume_ai/
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
-cd final_resume_ai
+git clone https://github.com/Jaffar94/resumeAi.git
+cd resume_ai
 ```
 
 ### 2. Install backend dependencies
@@ -213,5 +213,4 @@ npm start
 
 ## License
 
-Add your preferred license before publishing publicly.
-
+This porject is licensed under the MIT License

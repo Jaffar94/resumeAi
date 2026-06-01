@@ -213,4 +213,6 @@ npm start
 
 ## License
 
-This porject is licensed under the MIT License
+Copyright (c) 2026 Mirza Jaffar Abbas
+
+This project is licensed under the [MIT License](LICENSE).

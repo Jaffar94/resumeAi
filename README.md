@@ -12,7 +12,7 @@ ResumeAI helps users upload an existing resume, analyze it against a target role
 - **PDF pre-fill**: Upload an existing resume to populate the builder form automatically.
 - **Multiple resume templates**: Classic, Tech, Executive, Creative, and Minimal styles.
 - **Clean PDF export**: Browser-header-free print flow with mobile and print layout fixes.
-- **Provider fallback queue**: Uses Groq and Gemini models in priority order so one provider outage does not stop the app.
+- **Provider fallback queue**: Uses Groq (GPT-OSS-120B, Qwen-3.6-27B, Llama-3.1) and Gemini (2.5 Flash/Pro) models in priority order so one provider outage does not stop the app.
 - **Mobile-aware UI**: Optimized responsive builder flow with reduced heavy effects on smaller devices.
 
 ## Tech Stack
@@ -28,13 +28,13 @@ ResumeAI helps users upload an existing resume, analyze it against a target role
 - Express
 - Multer
 - pdf-parse
-- Groq API
-- Gemini API
+- Groq API (GPT-OSS 120B, Qwen 3.6 27B, Llama 3.1)
+- Gemini API (Gemini 2.5 Flash & Pro)
 
 ## Project Structure
 
 ```text
-resume_ai/
+final_resume_ai/
 ├── backend/
 │   ├── server.js
 │   ├── package.json
@@ -53,8 +53,8 @@ resume_ai/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Jaffar94/resumeAi.git
-cd resume_ai
+git clone <your-repo-url>
+cd final_resume_ai
 ```
 
 ### 2. Install backend dependencies
@@ -213,6 +213,5 @@ npm start
 
 ## License
 
-Copyright (c) 2026 Mirza Jaffar Abbas
+Add your preferred license before publishing publicly.
 
-This project is licensed under the [MIT License](LICENSE).

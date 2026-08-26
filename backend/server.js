@@ -174,9 +174,9 @@ async function callAIQueue(prompt) {
     { provider: "groq",   id: "qwen/qwen3.6-27b" },
     { provider: "gemini", id: "gemini-2.5-flash" },
     { provider: "gemini", id: "gemini-2.5-pro" },
-    { provider: "groq",   id: "mixtral-8x7b-32768" },
+    { provider: "groq",   id: "openai/gpt-oss-20b" },
     { provider: "gemini", id: "gemini-2.5-flash-lite" },
-    { provider: "groq",   id: "llama-3.1-8b-instant" },
+    { provider: "groq",   id: "qwen/qwen3.8-27b" },
   ];
 
   for (const { provider, id } of priorityQueue) {

@@ -170,10 +170,9 @@ async function fetchGroq(model, prompt) {
 /* ---------- UNIFIED AI QUEUE ---------- */
 async function callAIQueue(prompt) {
   const priorityQueue = [
-    { provider: "groq",   id: "openai/gpt-oss-120b" },
-    { provider: "groq",   id: "qwen/qwen3.6-27b" },
-    { provider: "gemini", id: "gemini-2.5-flash" },
-    { provider: "gemini", id: "gemini-2.5-pro" },
+    
+    { provider: "gemini", id: "gemini-3.6-flash" },
+    { provider: "gemini", id: "gemini-3.1-pro" },
     { provider: "groq",   id: "openai/gpt-oss-20b" },
     { provider: "gemini", id: "gemini-2.5-flash-lite" },
     { provider: "groq",   id: "qwen/qwen3.8-27b" },
